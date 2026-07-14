@@ -35,4 +35,8 @@ hermes-shanghan = "hermes_shanghan.cli:main"
 version = { attr = "hermes_shanghan._version.__version__" }
 
 [tool.setuptools.packages.find]
-include = ["hermes_shanghan*"]
+include = ["hermes_shanghan*", "hermes_tcm*"]
+
+[tool.setuptools.package-data]
+# Skills 隨包分發（SKILL.md 是 progressive-disclosure 的加載對象）
+hermes_tcm = ["skills/*/SKILL.md"]

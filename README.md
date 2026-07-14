@@ -27,6 +27,21 @@ Anthropic/OpenAI/Azure/Poe/MiniMax。
 存在於對應條文；證據回源失敗的規則直接進入 `rejected/`；對抗性測試
 （`tests/test_review.py`）注入偽造證據並斷言其被拒絕。
 
+## Hermes-TCM：全古籍證據操作系統內核（`hermes_tcm/`）
+
+本倉庫已按 [Protocol v1.0](docs/TCM_HARNESS.md) 完成架構升級：
+《傷寒論》從系統本體降為第一個高質量 Domain Pack，`hermes_tcm`
+提供通用內核——Work/Witness/Edition/Item/Passage 身份鏈、
+EvidenceRecord V2（五個正交維度）、僅 Broker 可寫的強類型證據台賬、
+SearchCoverage（禁止裸負結論）、Claim Graph + 可版本化 Conclusion
+Policy DSL、15 節點 typed run graph（SQLite WAL durable execution、
+CAS/租約/事件溯源/三模式 replay）、12 命名空間可發現工具面 +
+Capability Broker、tcm:// MCP 資源、隔離合議專家子代理、SKILL.md
+漸進披露技能、角色×目的雙維授權、六層評測與八項 P0 硬門檻。
+原有 `shanghan_*`/`classics_*` API 經 `hermes_tcm.tools.adapters`
+全部保持兼容。指令主源見 [`AGENT_CONSTITUTION.md`](AGENT_CONSTITUTION.md)；
+架構詳解見 [`docs/TCM_HARNESS.md`](docs/TCM_HARNESS.md)。
+
 ## Web 控制台（一站集成全部功能 + 多智能體）
 
 ```bash
@@ -165,7 +180,7 @@ python3 -m hermes_shanghan llm-status            # 查看 LLM 後端
 python3 -m hermes_shanghan classics "「奔豚」最早見於哪部醫書？"
 python3 -m hermes_shanghan library audit         # 全庫驗收審計（--sample N 抽樣金標準）
 
-# 測試（510 項：對抗性審核 + 智能體架構 + 36 工具 + 評測 + 七維研究循環 + 全庫接入 + 治理探針
+# 測試（656 項：對抗性審核 + 智能體架構 + 36 工具 + 評測 + 七維研究循環 + 全庫接入 + 治理探針 + hermes_tcm 通用內核（身份鏈/證據平面/Claim Graph/typed DAG/安全對抗）
 #       + 可復現性/證據鏈硬化 + 溯源層（引文識別/計量網絡/五類溯源鏈）+ Colab守衛
 #       + 模型增益層（鑒別回源核驗/審校、溯源綜合、歷代引用條目））
 python3 -m unittest discover -s tests
@@ -476,7 +491,7 @@ hermes_shanghan/
 ├─ integrations/ tool_specs(OpenAI/Anthropic) · mcp_server(Claude Code) · AGENTS.md
 ├─ server/      service(API面) · http_server(stdlib) · static(SPA: index/css/js)
 ├─ orchestrator.py（五大 Workflow 總調度，可選 --llm-extract/--llm-critic）· cli.py
-tests/          510 項測試 ｜ notebooks/ Colab 全功能演示（守衛測試保證與代碼同步）
+tests/          656 項測試 ｜ notebooks/ Colab 全功能演示（守衛測試保證與代碼同步）
 data/corpus_raw/   69 部古籍語料（含 manifest）
 data/library/      中醫笈成全庫（803 部，`library fetch` 自動下載，不入庫）
 data/shanghan/     全部生成資產（規則庫/審計/關係/科研/溯源/論文）
