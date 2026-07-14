@@ -210,6 +210,42 @@ class TestClaimVerifier(unittest.TestCase):
         self.assertEqual(claim.status, "failed")
         self.assertEqual(claim.verification["quotation"], "fail")
 
+    def test_semantic_support_not_bypassed_by_empty_work_title(self):
+        """回歸：空 work_title 的 '' in text 恆真，不得旁路語義支持核驗。"""
+        rec = _ev("ev_empty", "某段原文", work_id="urn:tcm:work:z",
+                  author="", dynasty="明")
+        rec.work_title = ""     # 空標題
+        self.ledger.register("n2", rec, self.tok)
+        claim = _claim("attestation", text="與證據無關的主張文本",
+                       evidence=["ev_empty"])
+        self.verifier.verify(claim, coverage=_full_coverage())
+        # 摘錄不在主張文本、work_title 為空 → 語義支持不通過 → needs_review
+        self.assertEqual(claim.verification["semantic_support"], "review")
+
+    def test_contradicting_evidence_forces_review(self):
+        """回歸：登記在案的反對證據必須進人工複核，不得直接 verified。"""
+        contra = _ev("ev_contra", "反例原文", dynasty="宋")
+        self.ledger.register("n3", contra, self.tok)
+        claim = _claim("attestation",
+                       text="《某書》載：「奔豚上衝，灸其核上」",
+                       evidence=["ev_1"])
+        claim.contradicting_evidence = ["ev_contra"]
+        self.verifier.verify(claim, coverage=_full_coverage())
+        self.assertEqual(claim.status, "needs_review")
+        self.assertEqual(claim.verification["contradiction"], "review")
+
+    def test_earliest_time_ordered_fails_closed_without_coverage(self):
+        """回歸：coverage=None 時 require_time_ordered/首見覆蓋要求
+        fail-closed（不靜默放行）。"""
+        engine = ConclusionPolicyEngine()
+        ev = [_ev("ev_1", "奔豚上衝", dynasty="東漢")]
+        claim = _claim("earliest_attestation", evidence=["ev_1"],
+                       counter=True)
+        out = engine.evaluate(
+            claim, ev, coverage=None,
+            tools_used=["citation.trace_quote", "citation.counter_search"])
+        self.assertEqual(out["verdict"], "fail")
+
     def test_per_claim_coverage_lookup(self):
         good = _full_coverage(coverage_id="cov_good")
         bad = _full_coverage(coverage_id="cov_bad",

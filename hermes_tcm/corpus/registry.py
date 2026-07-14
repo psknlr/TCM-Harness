@@ -75,7 +75,9 @@ class WorkRegistry:
         for u in members:
             placed = False
             for b in buckets:
-                if not _unit_conflicts(b[0], u):
+                # 與桶內**每個**成員比對：空元數據單元先入桶時只比桶首
+                # 會讓後續互相衝突的同名單元被靜默歸併（且審計零記錄）
+                if not any(_unit_conflicts(m, u) for m in b):
                     b.append(u)
                     placed = True
                     break
@@ -114,9 +116,12 @@ class WorkRegistry:
             self.works[wid] = work
             self._works_by_base[base].append(wid)
 
+            # 審計衝突按桶內兩兩計算（防禦性：桶構造已保證無衝突成員）
             conflicts: List[Dict] = []
-            for other in bucket[1:]:
-                conflicts.extend(_unit_conflicts(head, other))
+            for i_a in range(len(bucket)):
+                for i_b in range(i_a + 1, len(bucket)):
+                    conflicts.extend(_unit_conflicts(bucket[i_a],
+                                                     bucket[i_b]))
             confidence = 0.95 if status == "curated" else \
                 (0.6 if multi else (0.85 if authors or dynasties else 0.7))
             self.resolutions.append(IdentityResolution(

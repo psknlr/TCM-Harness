@@ -79,7 +79,15 @@ class TypedEvidenceLedger:
                 f"台賬寫入違例：記錄語料版本 {record.corpus_version!r} "
                 f"≠ 本 run 凍結版本 {self.corpus_version!r}")
         with self._lock:
-            if record.evidence_id in self._by_id:
+            existing = self._by_id.get(record.evidence_id)
+            if existing is not None:
+                # 全局去重會餓死後續節點的節點級 packet：同一段證據被
+                # 多個專家各自檢得時，共享同一份規範記錄掛到每個節點名下
+                node_list = self._by_node.setdefault(node_id, [])
+                if any(r.evidence_id == record.evidence_id
+                       for r in node_list):
+                    return False
+                node_list.append(existing)
                 return False
             if sum(len(v) for v in self._by_node.values()) \
                     >= self.MAX_RECORDS:

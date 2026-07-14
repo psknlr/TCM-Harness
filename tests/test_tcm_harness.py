@@ -220,6 +220,30 @@ class TestFullRun(TCMFixtureCase):
         self.assertGreater(b["used_tool_calls"], 0)
         self.assertLessEqual(b["used_tool_calls"], b["max_tool_calls"])
 
+    def test_terminal_run_cannot_be_resurrected(self):
+        """回歸：completed run 的 approve 是 no-op，不改寫/復活狀態。"""
+        row = self.ctrl.start("查一下中風",
+                              Principal(subject="r10", role="researcher"))
+        self.assertEqual(row["status"], "completed")
+        v0 = self.store.load(row["run_id"])["state_version"]
+        row2 = self.ctrl.resume(row["run_id"],
+                                approve="identity_needs_review")
+        self.assertEqual(row2["status"], "completed")
+        self.assertEqual(self.store.load(row["run_id"])["state_version"],
+                         v0)
+
+    def test_replay_strict_preserves_full_spec(self):
+        """回歸：strict replay 不崩潰，且沿用完整原 RunSpec（預算等）。"""
+        from hermes_tcm.harness.replay import replay_strict
+        from hermes_tcm.harness.run_spec import BudgetSpec
+        row = self.ctrl.start(
+            "查一下中風", Principal(subject="r11", role="researcher"),
+            budget=BudgetSpec(max_tool_calls=37))
+        rep = replay_strict(self.store, self.ctrl, row["run_id"])
+        self.assertIn("deterministic_match", rep)
+        replay_spec = self.store.load(rep["replay_run"])["spec"]
+        self.assertEqual(replay_spec["budget"]["max_tool_calls"], 37)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -53,6 +53,12 @@ def t_trace_term(term: str, variants: List[str] = None,
         for h in r["hits"]:
             all_hits.append({**h, "query_form": f})
         per_form.append({"form": f, "n_hits": r["n_hits"]})
+    if last is None:
+        # 全部檢索形式都被拒絕：不得產出覆蓋記錄（否則零掃描的
+        # exhaustive 覆蓋會為假負結論背書）
+        return {"tool": "citation.trace_term", "term": term,
+                "per_form": per_form,
+                "error": "no_query_form_searchable：所有檢索形式均被拒絕"}
     seen = set()
     merged = []
     for h in sorted(all_hits, key=lambda h: (h["dynasty_rank"],
@@ -61,7 +67,8 @@ def t_trace_term(term: str, variants: List[str] = None,
             continue
         seen.add(h["passage_id"])
         merged.append(h)
-    out = {"tool": "citation.trace_term", "available": True,
+    out = {"tool": "citation.trace_term",
+           "available": True,
            "term": term, "forms_searched": forms,
            "per_form": per_form,
            "n_attestations": len(merged),
@@ -122,7 +129,7 @@ def t_detect_relay(quote: str, max_scan: int = 300) -> Dict:
     重合度高即為轉引候選（是否直接引用/隱引屬人工判定）。"""
     import difflib
     out = t_trace_quote(quote=quote, max_scan=max_scan, top=20)
-    if out.get("error"):
+    if out.get("error") or not out.get("available", True):
         return {**out, "tool": "citation.detect_relay"}
     hits = out.get("attestations_time_ordered") or []
     if len(hits) < 2:
@@ -159,7 +166,7 @@ def t_detect_relay(quote: str, max_scan: int = 300) -> Dict:
 def t_build_citation_network(quote: str, max_scan: int = 300) -> Dict:
     """引文網絡：以載錄鏈構圖（節點=著作，邊=時間先後+相似度）。"""
     relay = t_detect_relay(quote=quote, max_scan=max_scan)
-    if relay.get("error"):
+    if relay.get("error") or not relay.get("available", True):
         return {**relay, "tool": "citation.build_citation_network"}
     chain = relay.get("relay_chain") or []
     nodes = sorted({c["from_work"] for c in chain}

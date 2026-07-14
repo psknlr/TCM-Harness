@@ -112,6 +112,34 @@ class TestWorkRegistry(TCMFixtureCase):
         self.assertGreaterEqual(s["n_needs_review"], 2)
         self.assertEqual(s["library_fingerprint"], "tcm-fixture")
 
+    def test_empty_metadata_unit_does_not_absorb_conflicts(self):
+        """回歸：空元數據單元先入桶時，不得靜默吸收互相衝突的同名單元
+        （桶內逐成員比對，不只比桶首）。"""
+        import tempfile
+        from pathlib import Path
+        from hermes_shanghan.corpus import library as _lib
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            books = root / _lib.BOOKS_SUBDIR
+            books.mkdir(parents=True)
+            for name, meta in (
+                    ("庚書_0", "書名=庚書\n"),                    # 空作者朝代，排最前
+                    ("庚書_a", "書名=庚書\n作者=甲\n朝代=明\n"),
+                    ("庚書_b", "書名=庚書\n作者=乙\n朝代=清\n")):
+                d = books / name
+                d.mkdir()
+                d.joinpath("index.txt").write_text(
+                    f"<book>\n{meta}分類=綜合\n</book>\n\n"
+                    "=====卷=====\n\n文。\n", encoding="utf-8")
+            cat = _lib.build_catalog(root, archive_sha256="z")
+            _lib.build_char_index(root, cat)
+            reg = WorkRegistry(_lib.Library(root))
+            works = [w for w in reg.works.values()
+                     if "庚書" in w.canonical_title]
+            self.assertGreaterEqual(len(works), 2)
+            self.assertTrue(reg.resolve_work("庚書")
+                            .needs_human_adjudication)
+
 
 if __name__ == "__main__":
     unittest.main()

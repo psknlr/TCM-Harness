@@ -109,9 +109,11 @@ class ResearchRunController:
         """建立 queued run 並同步落盤（無幽靈 run）。"""
         principal = principal or Principal(subject="anonymous",
                                            role="researcher")
+        # 顯式 task_type 優先（replay 沿用記錄值），否則確定性分類
+        task_type = spec_kwargs.pop("task_type", "") or classify_task(query)
         spec = RunSpecV2(run_id=run_id or new_run_id(query), query=query,
                          principal=principal,
-                         task_type=classify_task(query),
+                         task_type=task_type,
                          environment_fingerprint=environment_fingerprint(),
                          **spec_kwargs)
         self.store.create_run(spec.run_id, spec.to_dict())
@@ -258,6 +260,10 @@ class ResearchRunController:
         row = self.store.load(run_id)
         if row is None:
             raise ValueError(f"未知 run：{run_id}")
+        if row["status"] in TERMINAL:
+            # 終態不可復活/改寫：completed/blocked/rejected/cancelled 的
+            # approve/reject 一律 no-op 返回持久化狀態
+            return row
         state = row["state"]
         version = row["state_version"]
         if row["status"] != "paused" and not (approve or reject):

@@ -80,6 +80,13 @@ def register(reg) -> None:
         evidence_role="primary_text_returned",
         minimum_locator=["work_id", "passage_id", "char_start", "char_end"],
         requires_coverage_record=True)
+    # 閱讀類工具按 id 直取，無檢索範圍可言——不要求覆蓋記錄
+    # （否則每次成功閱讀都誤發 coverage_missing 護欄事件）
+    read_ec = EvidenceContract(
+        returns_primary_text=True,
+        evidence_role="primary_text_returned",
+        minimum_locator=["work_id", "passage_id", "char_start", "char_end"],
+        requires_coverage_record=False)
     reg.add(ToolContractV2(
         name="text.search_passages",
         description="全庫段落級布爾檢索（AND/OR/NOT/鄰近窗口），返回段落"
@@ -113,7 +120,7 @@ def register(reg) -> None:
             "required": []},
         func=t_read,
         use_when=["檢索命中後按需讀全文（just-in-time，不把全書塞進上下文）"],
-        evidence_contract=text_ec,
+        evidence_contract=read_ec,
         failure_modes=["corpus_unavailable", "passage_not_found"]))
     reg.add(ToolContractV2(
         name="text.read_context",
@@ -124,7 +131,7 @@ def register(reg) -> None:
             "required": ["passage_id"]},
         func=t_read_context,
         use_when=["檢索命中的語境不完整，需要前後文判斷"],
-        evidence_contract=text_ec,
+        evidence_contract=read_ec,
         failure_modes=["corpus_unavailable", "passage_not_found"]))
     reg.add(ToolContractV2(
         name="text.read_section",
@@ -135,5 +142,5 @@ def register(reg) -> None:
             "required": ["work"]},
         func=t_read_section,
         use_when=["需要整節連續閱讀（如某卷某病篇）"],
-        evidence_contract=text_ec,
+        evidence_contract=read_ec,
         failure_modes=["corpus_unavailable", "section_not_found"]))

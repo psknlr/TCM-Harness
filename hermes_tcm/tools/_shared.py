@@ -1,6 +1,7 @@
 """工具實現共享助手：searcher/WorkRegistry 緩存 + SearchCoverage 構建。"""
 from __future__ import annotations
 
+import threading
 from typing import Dict, List, Optional, Tuple
 
 from hermes_shanghan.classics.tools import _searcher
@@ -10,6 +11,7 @@ from ..corpus.registry import WorkRegistry
 from ..evidence.coverage import SearchCoverage, coverage_id_for
 
 _REGISTRY_CACHE: Dict[Tuple[str, float], WorkRegistry] = {}
+_REGISTRY_LOCK = threading.Lock()
 
 
 def searcher():
@@ -18,16 +20,22 @@ def searcher():
 
 
 def work_registry() -> Optional[WorkRegistry]:
-    """按（庫根, 編目 mtime）緩存的 WorkRegistry——換庫自動失效。"""
+    """按（庫根, 編目 mtime）緩存的 WorkRegistry——換庫自動失效。
+
+    鎖保護：clear()+rebuild 與並發讀之間的競態會讓一個線程 check 到
+    key、另一線程 clear() 後 KeyError；鎖內單次 get 且不二次讀。"""
     root = _libmod.library_root()
     cat = root / _libmod.CATALOG_NAME
     if not cat.exists():
         return None
     key = (str(root), cat.stat().st_mtime)
-    if key not in _REGISTRY_CACHE:
-        _REGISTRY_CACHE.clear()
-        _REGISTRY_CACHE[key] = WorkRegistry(_libmod.Library(root))
-    return _REGISTRY_CACHE[key]
+    with _REGISTRY_LOCK:
+        reg = _REGISTRY_CACHE.get(key)
+        if reg is None:
+            reg = WorkRegistry(_libmod.Library(root))
+            _REGISTRY_CACHE.clear()
+            _REGISTRY_CACHE[key] = reg
+        return reg
 
 
 def unavailable(tool: str) -> Dict:
@@ -55,6 +63,10 @@ def coverage_from_search(result: Dict, query_forms: List[str],
     n_candidates = l0.get("n_units_after",
                           len(getattr(s.lib, "units", [])) if s else 0)
     n_scanned = l2.get("n_units_scanned", 0)
+    # 防禦：候選存在卻零掃描（層信息缺失/檢索被拒），不能聲明窮盡——
+    # 否則零掃描的 exhaustive 覆蓋會為假負結論背書
+    zero_scan = n_scanned == 0 and n_candidates > 0
+    exhaustive = (not capped) and not zero_scan
     return SearchCoverage(
         coverage_id=coverage_id_for(query_forms,
                                     scope_note=str(sorted(filters.items()))),
@@ -68,6 +80,8 @@ def coverage_from_search(result: Dict, query_forms: List[str],
         query_forms=list(query_forms),
         search_modes=modes,
         scan_capped=capped,
-        exhaustive_within_scope=not capped,
-        stop_reason="scan_capped" if capped else "complete",
-        known_gaps=(["零命中僅覆蓋前 max_scan 個候選"] if capped else []))
+        exhaustive_within_scope=exhaustive,
+        stop_reason=("scan_capped" if capped
+                     else ("error" if zero_scan else "complete")),
+        known_gaps=(["零命中僅覆蓋前 max_scan 個候選"] if capped
+                    else (["候選存在但未掃描"] if zero_scan else [])))

@@ -38,8 +38,17 @@ def replay_strict(store: RunStore, controller, run_id: str) -> Dict:
         recorded = spec.environment_fingerprint.get(k, "")
         if recorded and recorded != v:
             mismatches[k] = {"recorded": recorded, "current": v}
-    new = controller.start(spec.query, principal=spec.principal,
-                           task_type=spec.task_type)
+    # 重放**完整**的原 RunSpec（預算/反證策略/範圍/模型策略一併沿用），
+    # 只換 run_id 並記錄本次實際運行環境
+    from .run_spec import new_run_id
+    replay_d = dict(old["spec"])
+    replay_d["run_id"] = new_run_id(spec.query)
+    replay_d["environment_fingerprint"] = current
+    replay_spec = RunSpecV2.from_dict(replay_d)
+    controller.store.create_run(replay_spec.run_id, replay_spec.to_dict())
+    controller.store.append_event(replay_spec.run_id, "run_prepared",
+                                  {"replay_of": run_id})
+    new = controller.execute(replay_spec.run_id)
     old_answer = old.get("state", {}).get("final_answer", "")
     new_answer = new.get("state", {}).get("final_answer", "")
     comparable = (not mismatches

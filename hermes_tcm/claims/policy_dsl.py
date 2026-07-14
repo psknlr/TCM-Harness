@@ -24,7 +24,8 @@ import json
 from typing import Any, Dict, List, Optional, Sequence
 
 from ..core.schemas import verification_at_least
-from ..evidence.coverage import SearchCoverage, earliest_claim_allowed
+from ..evidence.coverage import (SearchCoverage, earliest_claim_allowed,
+                                 negative_statement)
 from ..evidence.records import EvidenceRecord
 from .records import ClaimRecord
 
@@ -220,26 +221,41 @@ class ConclusionPolicyEngine:
                         + ("無任何支持證據" if not ev
                            else "、".join(weak[:5])))
 
-        # 4. 覆蓋要求
+        # 4. 覆蓋要求（coverage 缺失一律 fail-closed：沒有覆蓋記錄
+        # 就無法核驗任何覆蓋類要求，不能靜默放行）
         cov_req = policy.get("coverage", {})
         if cov_req:
-            if cov_req.get("require_coverage_bound") and coverage is None:
-                violations.append("負結論必須綁定 SearchCoverage"
-                                  "（禁止裸負結論）")
+            if cov_req.get("require_coverage_bound"):
+                if coverage is None:
+                    violations.append("負結論必須綁定 SearchCoverage"
+                                      "（禁止裸負結論）")
+                else:
+                    neg = negative_statement(coverage)
+                    if not neg["allowed"]:
+                        violations.append(
+                            f"覆蓋不足以支持負結論：{neg['reason']}")
+                    else:
+                        qualifiers.append(neg["statement"])
             if cov_req.get("require_counter_search") \
                     and not claim.counter_search_performed:
                 violations.append("未執行反證搜索（counter_search 義務）")
-            if cov_req.get("require_time_ordered") and coverage is not None \
-                    and "dynasty_ordered" not in (coverage.search_modes or []):
-                violations.append("覆蓋記錄未聲明時間有序檢索"
-                                  "（search_modes 缺 dynasty_ordered）")
-            if cov_req.get("forbid_when_earlier_partial_candidate") \
-                    and coverage is not None:
-                gate = earliest_claim_allowed(coverage)
-                if not gate["allowed"]:
-                    violations.append(gate["reason"])
-                elif gate.get("forced_qualifier"):
-                    qualifiers.append(gate["forced_qualifier"])
+            if cov_req.get("require_time_ordered"):
+                if coverage is None:
+                    violations.append("缺少 SearchCoverage 記錄"
+                                      "（require_time_ordered 無法核驗）")
+                elif "dynasty_ordered" not in (coverage.search_modes or []):
+                    violations.append("覆蓋記錄未聲明時間有序檢索"
+                                      "（search_modes 缺 dynasty_ordered）")
+            if cov_req.get("forbid_when_earlier_partial_candidate"):
+                if coverage is None:
+                    violations.append("缺少 SearchCoverage 記錄"
+                                      "（首見結論無法核驗覆蓋充分性）")
+                else:
+                    gate = earliest_claim_allowed(coverage)
+                    if not gate["allowed"]:
+                        violations.append(gate["reason"])
+                    elif gate.get("forced_qualifier"):
+                        qualifiers.append(gate["forced_qualifier"])
 
         # 5. 頻次證據限制（必須避免的錯誤之四）
         if policy.get("forbid_frequency_only") and ev:

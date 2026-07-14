@@ -23,12 +23,18 @@ from .approvals import ADJUDICATION_TRIGGERS, HUMAN_REVIEW_TRIGGERS
 import re as _re
 
 _ACTION_PATTERNS = [
+    # 面向 fail-closed 目的閘門的保守寬鬆匹配：僅對「禁用該能力的目的」
+    # 有影響，故寧可誤報也不漏報
     ("medication_recommendation",
      _re.compile(r"[一-鿿]{1,6}(?:湯|丸|散|飲)(?:主之|可服|宜服|服之|"
-                 r"可與|可考慮)|建議(?:服用|使用)")),
+                 r"可與|可考慮|調理|很?適合)|建議(?:服用|使用)|"
+                 r"(?:建議|推薦|可用|可以|不妨)[一-鿿]{0,3}?"
+                 r"[一-鿿]{1,6}(?:湯|丸|散|飲)|"
+                 r"[服喝用][一-鿿]{1,6}(?:湯|丸|散|飲)")),
     ("dosing_instruction",
      _re.compile(r"(?:每日|一日)\s*[一二三四五六七八九十\d]+\s*(?:次|服)|"
-                 r"[一二三四五六七八九十百\d]+(?:兩|銖|升|枚|克|g)\b|劑量")),
+                 r"[一二三四五六七八九十百\d]+(?:兩|銖|升|枚|克)|"
+                 r"[一二三四五六七八九十百\d]+g(?![A-Za-z])|劑量")),
     ("administration_instruction",
      _re.compile(r"煎服|溫服|頓服|分溫|水煎|先煮|去滓")),
 ]

@@ -1,5 +1,6 @@
 """工具面（P0-7/10）：命名空間註冊表 / Broker 中介 / legacy 適配 / 覆蓋登記。"""
 import unittest
+from pathlib import Path
 
 from hermes_tcm.core.principals import Principal
 from hermes_tcm.evidence.ledger import TypedEvidenceLedger
@@ -188,6 +189,61 @@ class TestBrokerPipeline(TCMFixtureCase):
         out = broker.call("text.search_passages", {"query": "奔豚"})
         self.assertTrue(out.get("cache_hit"))
         self.assertEqual(len(ledger), n1)       # 去重：不重複入賬
+
+    def test_read_tool_no_coverage_guardrail(self):
+        """回歸：閱讀類工具不要求覆蓋記錄，成功閱讀不誤發護欄事件。"""
+        broker, _ = self._broker()
+        s = broker.call("text.search_passages", {"query": "奔豚"})
+        pid = s["hits"][0]["passage_id"]
+        broker.guardrail_events = []
+        broker.call("text.read_passage", {"passage_id": pid})
+        self.assertFalse(any(e["event"] == "coverage_missing"
+                             for e in broker.guardrail_events))
+
+    def test_dosage_capability_labeled(self):
+        """回歸：formula.compare_dosage 標 dosage_conversion（不被前綴
+        規則搶先標成 formula_recommendation）。"""
+        from hermes_tcm.tools.broker import _tool_capability
+        self.assertEqual(_tool_capability("formula.compare_dosage"),
+                         "dosage_conversion")
+
+
+class TestUnavailableHandling(unittest.TestCase):
+    """庫未就緒（available:False）不得被當成成功結果緩存/入賬。"""
+
+    def setUp(self):
+        import tempfile
+        from hermes_shanghan import config
+        self._tmp = tempfile.TemporaryDirectory()
+        self._saved = config.LIBRARY_DIR
+        config.LIBRARY_DIR = Path(self._tmp.name)   # 空庫
+
+    def tearDown(self):
+        from hermes_shanghan import config
+        config.LIBRARY_DIR = self._saved
+        self._tmp.cleanup()
+
+    def test_unavailable_not_ok_not_cached(self):
+        broker = CapabilityBroker(get_tcm_registry(),
+                                  TypedEvidenceLedger("cv"),
+                                  corpus_version="cv")
+        broker.call("text.search_passages", {"query": "奔豚"})
+        self.assertFalse(broker.audit_tail(1)[0]["ok"])
+        out2 = broker.call("text.search_passages", {"query": "奔豚"})
+        self.assertFalse(out2.get("cache_hit"))   # 未就緒不入緩存
+
+    def test_citation_tools_propagate_unavailable(self):
+        broker = CapabilityBroker(get_tcm_registry(),
+                                  TypedEvidenceLedger("cv"),
+                                  corpus_version="cv")
+        for tool, args in (("citation.detect_relay", {"quote": "奔豚上衝"}),
+                           ("citation.build_citation_network",
+                            {"quote": "奔豚上衝"}),
+                           ("collation.list_variants",
+                            {"work": "傷寒論", "query": "中風"})):
+            out = broker.call(tool, args)
+            self.assertFalse(out.get("available", True),
+                             f"{tool} 未傳播 available:False")
 
 
 if __name__ == "__main__":

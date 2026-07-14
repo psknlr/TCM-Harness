@@ -111,6 +111,13 @@ def earliest_claim_allowed(cov: SearchCoverage) -> Dict[str, Any]:
     neg = negative_statement(cov)
     if not neg["allowed"]:
         return {"allowed": False, "reason": neg["reason"]}
+    if neg["reason"] != "exhaustive_within_scope":
+        # 抽樣/封頂/OCR 不足的覆蓋只支持相應級別的負結論——最早載錄
+        # 可能落在未掃描部分，「首見」+全庫限定語即是過度聲明
+        return {"allowed": False,
+                "reason": f"覆蓋非窮盡（{neg['reason']}）——「首見」結論需 "
+                          "exhaustive_within_scope 覆蓋；當前覆蓋僅支持"
+                          f"「{neg['statement']}」級別的負結論"}
     return {"allowed": True,
             "forced_qualifier": "在當前語料庫範圍內",
             "reason": neg["reason"]}

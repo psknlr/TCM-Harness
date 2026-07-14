@@ -31,7 +31,7 @@ def t_align_witnesses(work: str, query: str = "", limit: int = 6) -> Dict:
 def t_list_variants(work: str, query: str, limit: int = 6) -> Dict:
     """探針詞在各傳本的異文清單（成對差異）。"""
     out = t_align_witnesses(work=work, query=query, limit=limit)
-    if out.get("error"):
+    if out.get("error") or not out.get("available", True):
         return {**out, "tool": "collation.list_variants"}
     probes = out.get("probe_hits") or []
     variants: List[Dict] = []
@@ -94,7 +94,7 @@ def t_compare_passages(passage_ids: List[str]) -> Dict:
 def t_export_tei_apparatus(work: str, query: str, limit: int = 6) -> Dict:
     """探針對照 → TEI P5 critical apparatus（app/lem/rdg）。"""
     out = t_align_witnesses(work=work, query=query, limit=limit)
-    if out.get("error"):
+    if out.get("error") or not out.get("available", True):
         return {**out, "tool": "collation.export_tei_apparatus"}
     probes = out.get("probe_hits") or []
     if not probes:

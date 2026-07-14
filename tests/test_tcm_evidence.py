@@ -206,6 +206,17 @@ class TestSearchCoverage(unittest.TestCase):
         self.assertTrue(gate2["allowed"])
         self.assertEqual(gate2["forced_qualifier"], "在當前語料庫範圍內")
 
+    def test_earliest_requires_exhaustive_coverage(self):
+        """回歸：抽樣/封頂覆蓋不得支持「首見」全庫限定語（最早載錄可能
+        在未掃描部分）。"""
+        for kw in ({"scan_capped": True, "stop_reason": "scan_capped"},
+                   {"sampled_only": True, "stop_reason": "sampled"},
+                   {"low_ocr_quality": True}):
+            cov = SearchCoverage(coverage_id="c", corpus_versions=["cv1"],
+                                 **kw)
+            self.assertFalse(earliest_claim_allowed(cov)["allowed"],
+                             kw)
+
 
 class TestPacketsAndProvenance(unittest.TestCase):
     def test_packet_verify_and_roundtrip(self):

@@ -29,7 +29,10 @@ class ClaimCompiler:
         if task_type == "witness_comparison":
             return self._variants(topic, recs, cov)
         if task_type == "negative_result":
-            return self._negative(topic, cov)
+            # 反證評論員命中時應編譯 attestation（有原文=證明存在），
+            # 只有真的零命中才是負結論——不能無條件斷言「未見」
+            return (self._attestations(topic, recs, cov) if recs
+                    else self._negative(topic, cov))
         # 默認：每條正文證據一條 attestation 主張
         return self._attestations(topic, recs, cov)
 
@@ -47,9 +50,13 @@ class ClaimCompiler:
             return self._negative(topic, cov)
         # 顯式時間排序（不信任登記順序）：朝代序 + 檢索排名；
         # 無朝代著作 UNRANKED 排最後，永遠不能贏得首現
-        from hermes_shanghan.classics.model import dynasty_rank
+        from hermes_shanghan.classics.model import UNRANKED, dynasty_rank
         first = min(recs, key=lambda r: (dynasty_rank(r.dynasty),
                                          r.retrieval_rank))
+        if dynasty_rank(first.dynasty) >= UNRANKED:
+            # 全部候選無朝代——無時間信息可據，不得斷言首現，
+            # 降級為普通 attestation 主張（守住「UNRANKED 不能贏首現」）
+            return self._attestations(topic, recs, cov)
         text = (f"「{topic}」在本庫時間有序檢索中最早見於"
                 f"《{first.work_title}》（{first.dynasty or '年代未詳'}）")
         claim = ClaimRecord(

@@ -100,14 +100,19 @@ class SpecialistAgent:
         self.tool_scope = SPECIALIST_ROLES[role]["tool_scope"]
 
     def analyze(self, packet: EvidencePacket, task_type: str,
-                topic: str) -> SpecialistReport:
+                topic: str,
+                counter_search_performed: bool = False) -> SpecialistReport:
         compiler = ClaimCompiler()
         role_task = {
             "chronology_specialist": "earliest_attestation",
             "collation_specialist": "witness_comparison",
+            # 反證評論員命中即編譯 attestation（見 compiler），未命中才
+            # 是 negative_result——不再無條件斷言「未見」
             "counterevidence_critic": "negative_result",
         }.get(self.role, task_type)
-        claims = compiler.compile(role_task, packet, topic=topic)
+        claims = compiler.compile(
+            role_task, packet, topic=topic,
+            counter_search_performed=counter_search_performed)
         return SpecialistReport(role=self.role,
                                 packet_id=packet.packet_id,
                                 claims=claims,
@@ -117,7 +122,9 @@ class SpecialistAgent:
 def dispatch_specialists(roles: Sequence[str],
                          packets: Dict[str, EvidencePacket],
                          task_type: str, topic: str,
-                         budget=None) -> List[SpecialistReport]:
+                         budget=None,
+                         counter_search_performed: bool = False
+                         ) -> List[SpecialistReport]:
     """派發專家：每個角色一個**獨立** packet（不共享、不互讀）。
 
     packets 鍵為角色名；缺包的角色如實跳過（不偷看他人證據）。
@@ -129,8 +136,9 @@ def dispatch_specialists(roles: Sequence[str],
             continue
         if budget is not None and not budget.reserve_subagent(role):
             break
-        reports.append(SpecialistAgent(role).analyze(packet, task_type,
-                                                     topic))
+        reports.append(SpecialistAgent(role).analyze(
+            packet, task_type, topic,
+            counter_search_performed=counter_search_performed))
     return reports
 
 
@@ -145,13 +153,16 @@ def cross_review(reports: List[SpecialistReport]) -> List[Dict]:
         for c in rep.claims:
             by_type.setdefault(c.claim_type, []).append((i, c))
     for claim_type, entries in by_type.items():
-        if len(entries) < 2:
+        # 分歧必須跨**不同專家**：同一專家的多段互補 attestation（如
+        # 各段原文）不是分歧，計數也按不同報告者而非主張條數
+        reporters = {i for i, _ in entries}
+        if len(reporters) < 2:
             continue
         texts = {c.claim_text for _, c in entries}
         if len(texts) > 1:
             conflicts.append({
                 "claim_type": claim_type,
-                "n_reviewers": len(entries),
+                "n_reviewers": len(reporters),
                 "divergent_texts": sorted(texts)[:4],
                 "note": "匿名交叉審查發現分歧——進入 human_review"})
     return conflicts

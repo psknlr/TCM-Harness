@@ -76,7 +76,9 @@ class CapabilityBroker:
         def _finish(out: Dict, cache_hit: bool = False) -> Dict:
             entry = {"tool": name, "span_id": span_id,
                      "tool_call_id": span_id,
-                     "ok": "error" not in out,
+                     # available:False（庫未就緒）不算成功調用
+                     "ok": "error" not in out
+                           and out.get("available", True) is not False,
                      "error": out.get("error"),
                      "ms": int((time.time() - t0) * 1000),
                      "cache_hit": cache_hit,
@@ -185,8 +187,10 @@ class CapabilityBroker:
                                      f"{MAX_RESULT_BYTES} bytes",
                             "hint": "縮小 limit/max_scan 或分頁調用"})
 
-        # 9. 證據 + 覆蓋登記（台賬唯一寫入口）
-        if "error" not in result:
+        # 9. 證據 + 覆蓋登記（台賬唯一寫入口）。available:False 的結果
+        # 既不入賬也不入緩存——庫未就緒不是可複用的成功結果
+        if "error" not in result \
+                and result.get("available", True) is not False:
             self._register_evidence(resolved, span_id, result, arguments,
                                     node_id)
             if contract.evidence_contract.requires_coverage_record \
@@ -247,11 +251,12 @@ class CapabilityBroker:
 
 # ---------------------------------------------------------------------------
 def _tool_capability(name: str) -> str:
-    """工具 → 能力標籤（目的限制檢查用）。只讀檢索類無標籤。"""
+    """工具 → 能力標籤（目的限制檢查用）。只讀檢索類無標籤。
+    特定工具判定在前，命名空間前綴兜底在後（順序即語義）。"""
+    if name == "formula.compare_dosage":
+        return "dosage_conversion"
     if name.startswith("formula.") and name != "formula.trace_lineage":
         return "formula_recommendation"
-    if name in ("formula.compare_dosage",):
-        return "dosage_conversion"
     return ""
 
 

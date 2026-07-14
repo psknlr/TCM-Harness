@@ -59,14 +59,25 @@ class ClaimVerifier:
         # 3. semantic_support：確定性下界檢查——正文型主張的證據摘錄
         #    必須出現在主張文本中（模板編譯保證），否則標 review
         if claim.claim_type == "attestation" and ev:
-            supported = any(e.verbatim and (e.verbatim[:20] in claim.claim_text
-                                            or e.work_title in claim.claim_text)
-                            for e in ev)
+            # 空 work_title 的 '' in text 恆為真——必須顯式排除，否則
+            # 語義支持核驗被空字段旁路
+            supported = any(
+                e.verbatim and (e.verbatim[:20] in claim.claim_text
+                                or (e.work_title
+                                    and e.work_title in claim.claim_text))
+                for e in ev)
             result["semantic_support"] = "pass" if supported else "review"
         else:
             result["semantic_support"] = "pass" if (ev or claim.claim_type
                                                     == "negative_result") \
                 else "review"
+
+        # 3b. contradiction：登記在案的反對證據必須進人工複核
+        contra = [self.ledger.get(eid)
+                  for eid in claim.contradicting_evidence]
+        result["contradiction"] = ("review"
+                                   if any(e is not None for e in contra)
+                                   else "pass")
 
         # 4. coverage + 策略引擎
         policy = self.engine.evaluate(claim, ev, coverage=coverage,
@@ -86,7 +97,8 @@ class ClaimVerifier:
                 or policy["verdict"] == "fail":
             claim.status = "failed"
         elif policy["verdict"] == "review_required" \
-                or result["semantic_support"] == "review":
+                or result["semantic_support"] == "review" \
+                or result["contradiction"] == "review":
             claim.status = "needs_review"
         else:
             claim.status = "verified"

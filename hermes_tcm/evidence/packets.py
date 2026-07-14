@@ -73,10 +73,15 @@ def verify_packet(records: Sequence[EvidenceRecord],
                              "reason": "quote_hash_mismatch"})
             continue
         if passage_index is not None and r.passage_id:
-            unit_hint = ""
-            # 舊 P 層以編目單元 id 定位；V2 記錄的 passage 定位由
-            # passage_id 全局唯一保證
-            p = passage_index.get(r.passage_id, work=unit_hint)
+            # work_title 是編目單元標題（Library._resolve 可匹配）——先用
+            # 它定位單元，命中 by-id 緩存則零掃描；缺失時退回全庫掃描
+            # （不能把「封頂掃描未命中」誤報為 passage_not_found）
+            p = (passage_index.get(r.passage_id, work=r.work_title)
+                 if r.work_title else None)
+            if p is None:
+                p = passage_index.get(
+                    r.passage_id,
+                    max_scan_units=len(passage_index.lib.units))
             if p is None:
                 failures.append({"evidence_id": r.evidence_id,
                                  "reason": "passage_not_found"})

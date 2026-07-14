@@ -79,24 +79,28 @@ class ResearchOrchestrator:
                                   {"query": topic, "order": "dynasty"}),
         }
         packets = {}
+        counter_ok = False
         for role in roles:
             tool, args = retrieval[role]
-            marker = len(ledger)
-            broker.call(tool, args, node_id=f"specialist:{role}")
+            out = broker.call(tool, args, node_id=f"specialist:{role}")
+            if tool == "citation.counter_search" and "error" not in out \
+                    and out.get("available", True) is not False:
+                counter_ok = True
             # 獨立包：該角色本次調用新增的證據（不含他人取證）
             role_records = ledger.node_records(f"specialist:{role}")
-            coverage = None
-            if broker.coverages:
-                coverage = sorted(broker.coverages.values(),
-                                  key=lambda c: c.coverage_id)[-1]
+            # 覆蓋綁定到**該角色自己那次調用**產出的覆蓋，不取共享 map
+            # 的任意元素（否則洩漏他人的檢索範圍）
+            cov_id = (out.get("coverage") or {}).get("coverage_id")
+            coverage = broker.coverages.get(cov_id) if cov_id else None
             packets[role] = build_packet(
                 f"{topic}#{role}", role_records, coverage=coverage,
                 corpus_version=self.corpus_version)
-            del marker
 
-        # 2. 各專家獨立形成 claims（不讀彼此結論）
+        # 2. 各專家獨立形成 claims（不讀彼此結論）；反證是否真的執行由
+        # 審計如實決定（不能默認 False 讓每個首見主張都 fail）
         reports = dispatch_specialists(roles, packets, task_type, topic,
-                                       budget=budget)
+                                       budget=budget,
+                                       counter_search_performed=counter_ok)
 
         # 3. 匿名交叉審查
         conflicts = cross_review(reports)

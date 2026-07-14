@@ -143,5 +143,5 @@ intake → task_classify → scope_contract → plan_compile
 
 ## 九、測試
 
-`tests/test_tcm_*.py` 146 項（fixture 微型全庫含同名異書、多傳本、
-跨朝代術語鏈、注入文本書），全部離線確定性。全倉 656 項。
+`tests/test_tcm_*.py` 157 項（fixture 微型全庫含同名異書、多傳本、
+跨朝代術語鏈、注入文本書），全部離線確定性。全倉 667 項。
