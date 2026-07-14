@@ -1,0 +1,462 @@
+{
+ "note": "學派歸屬為編輯性元數據（source_level=posthoc_induction），依據通行傷寒學術史分類整編，僅收語料在庫著者；agreement 字段來自注家分歧圖譜的實測一致度矩陣，用於數據層面檢驗學派分野。",
+ "n_schools": 10,
+ "commentator_school": {
+  "丹波元簡": "SCH_KAOZHENG",
+  "丹波元胤": "SCH_KAOZHENG",
+  "劉完素": "SCH_HEJIAN",
+  "尤怡": "SCH_YIFA_LEIZHENG",
+  "張卿子": "SCH_WEIHU_JIULUN",
+  "張璐": "SCH_CUOJIAN",
+  "徐大椿": "SCH_FANGZHENG",
+  "成無己": "SCH_YIJING_ZHULUN",
+  "方有執": "SCH_CUOJIAN",
+  "曹穎甫": "SCH_JINGFANG_SHIYAN",
+  "柯琴": "SCH_FANGZHENG",
+  "許叔微": "SCH_SONG_LINZHENG",
+  "郭雍": "SCH_SONG_LINZHENG",
+  "錢潢": "SCH_YIFA_LEIZHENG",
+  "鎦洪": "SCH_HEJIAN",
+  "陳念祖": "SCH_WEIHU_JIULUN",
+  "馬宗素": "SCH_HEJIAN",
+  "黃元御": "SCH_QIHUA",
+  "龐安石": "SCH_SONG_LINZHENG"
+ },
+ "schools": [
+  {
+   "school_id": "SCH_YIJING_ZHULUN",
+   "name": "以經注論派",
+   "paradigm": "以《內經》《難經》理論注解仲景條文，重病機闡釋",
+   "members": [
+    {
+     "name": "成無己",
+     "book_dirs": [
+      "註解傷寒論",
+      "傷寒明理論",
+      "傷寒明理論_1"
+     ],
+     "role": "創派（傷寒全注第一家）"
+    }
+   ],
+   "scope": "適於病機層面的條文解釋；易把《內經》框架外推到仲景本義之外",
+   "opposed_to": [],
+   "source_level": "posthoc_induction",
+   "agreement": {
+    "intra_school_pairs": [],
+    "most_divergent_cross_pairs": [
+     {
+      "a": "成無己",
+      "b": "方有執",
+      "mean_term_agreement": 0.1318,
+      "n_shared_clauses": 282
+     },
+     {
+      "a": "成無己",
+      "b": "柯琴",
+      "mean_term_agreement": 0.1382,
+      "n_shared_clauses": 295
+     },
+     {
+      "a": "成無己",
+      "b": "黃元御",
+      "mean_term_agreement": 0.1439,
+      "n_shared_clauses": 43
+     }
+    ]
+   }
+  },
+  {
+   "school_id": "SCH_CUOJIAN",
+   "name": "錯簡重訂派",
+   "paradigm": "認為王叔和編次已亂仲景舊貌，主張重訂條文編次（風傷衛/寒傷營/風寒兩傷框架）",
+   "members": [
+    {
+     "name": "方有執",
+     "book_dirs": [
+      "傷寒論條辨",
+      "傷寒論條辨_1"
+     ],
+     "role": "創派"
+    },
+    {
+     "name": "張璐",
+     "book_dirs": [
+      "傷寒纘論",
+      "傷寒纘論_傷寒緒論"
+     ],
+     "role": "承喻昌三綱之說"
+    }
+   ],
+   "scope": "適於文獻編次與體例研究；重訂本身缺乏版本學直接證據",
+   "opposed_to": [
+    "SCH_WEIHU_JIULUN"
+   ],
+   "source_level": "posthoc_induction",
+   "agreement": {
+    "intra_school_pairs": [],
+    "most_divergent_cross_pairs": [
+     {
+      "a": "方有執",
+      "b": "錢潢",
+      "mean_term_agreement": 0.0842,
+      "n_shared_clauses": 286
+     },
+     {
+      "a": "丹波元簡",
+      "b": "方有執",
+      "mean_term_agreement": 0.0994,
+      "n_shared_clauses": 283
+     },
+     {
+      "a": "方有執",
+      "b": "柯琴",
+      "mean_term_agreement": 0.102,
+      "n_shared_clauses": 262
+     }
+    ]
+   }
+  },
+  {
+   "school_id": "SCH_WEIHU_JIULUN",
+   "name": "維護舊論派",
+   "paradigm": "尊王叔和整理與成無己舊注，反對重訂編次",
+   "members": [
+    {
+     "name": "張卿子",
+     "book_dirs": [
+      "張卿子傷寒論"
+     ],
+     "role": "以成注為底本集注"
+    },
+    {
+     "name": "陳念祖",
+     "book_dirs": [
+      "傷寒醫訣串解"
+     ],
+     "role": "陳修園，尊經維舊"
+    }
+   ],
+   "scope": "適於保守文本立場的解讀；對編次疑點回應不足",
+   "opposed_to": [
+    "SCH_CUOJIAN"
+   ],
+   "source_level": "posthoc_induction",
+   "agreement": {
+    "intra_school_pairs": [],
+    "most_divergent_cross_pairs": [
+     {
+      "a": "張卿子",
+      "b": "方有執",
+      "mean_term_agreement": 0.1189,
+      "n_shared_clauses": 281
+     },
+     {
+      "a": "張卿子",
+      "b": "柯琴",
+      "mean_term_agreement": 0.1371,
+      "n_shared_clauses": 289
+     },
+     {
+      "a": "張卿子",
+      "b": "黃元御",
+      "mean_term_agreement": 0.1513,
+      "n_shared_clauses": 41
+     }
+    ]
+   }
+  },
+  {
+   "school_id": "SCH_FANGZHENG",
+   "name": "辨證論治·以方類證派",
+   "paradigm": "以方名證、方證相應：按方劑統攝條文，重症狀組合與方劑對應",
+   "members": [
+    {
+     "name": "柯琴",
+     "book_dirs": [
+      "傷寒來蘇集",
+      "傷寒論注",
+      "傷寒論翼",
+      "傷寒附翼"
+     ],
+     "role": "創派（《來蘇集》以方類證）"
+    },
+    {
+     "name": "徐大椿",
+     "book_dirs": [
+      "傷寒論類方",
+      "傷寒論類方_1"
+     ],
+     "role": "徐靈胎，《類方》不類經而類方"
+    }
+   ],
+   "scope": "適於方證對應與臨床檢索；對六經病機的系統性論述較弱",
+   "opposed_to": [],
+   "source_level": "posthoc_induction",
+   "agreement": {
+    "intra_school_pairs": [],
+    "most_divergent_cross_pairs": [
+     {
+      "a": "柯琴",
+      "b": "黃元御",
+      "mean_term_agreement": 0.0728,
+      "n_shared_clauses": 44
+     },
+     {
+      "a": "方有執",
+      "b": "柯琴",
+      "mean_term_agreement": 0.102,
+      "n_shared_clauses": 262
+     },
+     {
+      "a": "柯琴",
+      "b": "錢潢",
+      "mean_term_agreement": 0.1058,
+      "n_shared_clauses": 292
+     }
+    ]
+   }
+  },
+  {
+   "school_id": "SCH_YIFA_LEIZHENG",
+   "name": "辨證論治·以法類證派",
+   "paradigm": "以治法統攝條文（正治/權變/斡旋/救逆/類病），重法度源流",
+   "members": [
+    {
+     "name": "尤怡",
+     "book_dirs": [
+      "傷寒貫珠集",
+      "傷寒貫珠集_1"
+     ],
+     "role": "創派"
+    },
+    {
+     "name": "錢潢",
+     "book_dirs": [
+      "傷寒溯源集"
+     ],
+     "role": "溯源審因，以因類證"
+    }
+   ],
+   "scope": "適於治法源流與法度研究",
+   "opposed_to": [],
+   "source_level": "posthoc_induction",
+   "agreement": {
+    "intra_school_pairs": [
+     {
+      "a": "尤怡",
+      "b": "錢潢",
+      "mean_term_agreement": 0.1618,
+      "n_shared_clauses": 274
+     }
+    ],
+    "most_divergent_cross_pairs": [
+     {
+      "a": "方有執",
+      "b": "錢潢",
+      "mean_term_agreement": 0.0842,
+      "n_shared_clauses": 286
+     },
+     {
+      "a": "柯琴",
+      "b": "錢潢",
+      "mean_term_agreement": 0.1058,
+      "n_shared_clauses": 292
+     },
+     {
+      "a": "尤怡",
+      "b": "方有執",
+      "mean_term_agreement": 0.1077,
+      "n_shared_clauses": 246
+     }
+    ]
+   }
+  },
+  {
+   "school_id": "SCH_QIHUA",
+   "name": "氣化學派",
+   "paradigm": "以六氣氣化（標本中氣）解六經，重運氣一元論",
+   "members": [
+    {
+     "name": "黃元御",
+     "book_dirs": [
+      "傷寒懸解"
+     ],
+     "role": "一氣周流、土樞四象框架"
+    }
+   ],
+   "scope": "理論自洽性強；框架先行，易過度統一化仲景本文",
+   "opposed_to": [
+    "SCH_FANGZHENG"
+   ],
+   "source_level": "posthoc_induction",
+   "agreement": {
+    "intra_school_pairs": [],
+    "most_divergent_cross_pairs": [
+     {
+      "a": "柯琴",
+      "b": "黃元御",
+      "mean_term_agreement": 0.0728,
+      "n_shared_clauses": 44
+     },
+     {
+      "a": "尤怡",
+      "b": "黃元御",
+      "mean_term_agreement": 0.1301,
+      "n_shared_clauses": 35
+     },
+     {
+      "a": "成無己",
+      "b": "黃元御",
+      "mean_term_agreement": 0.1439,
+      "n_shared_clauses": 43
+     }
+    ]
+   }
+  },
+  {
+   "school_id": "SCH_HEJIAN",
+   "name": "河間學派（寒涼派）",
+   "paradigm": "六氣皆從火化，傷寒多熱證，主寒涼清熱（溫病學先聲）",
+   "members": [
+    {
+     "name": "劉完素",
+     "book_dirs": [
+      "傷寒直格_1",
+      "傷寒標本心法類萃",
+      "傷寒標本心法類萃_1",
+      "傷寒心要_1"
+     ],
+     "role": "創派"
+    },
+    {
+     "name": "馬宗素",
+     "book_dirs": [
+      "劉河間傷寒醫鑑"
+     ],
+     "role": "傳河間之學"
+    },
+    {
+     "name": "鎦洪",
+     "book_dirs": [
+      "河間傷寒心要"
+     ],
+     "role": "傳河間之學"
+    }
+   ],
+   "scope": "適於熱病/溫病視角；以火熱立論對虛寒證候解釋力弱",
+   "opposed_to": [],
+   "source_level": "posthoc_induction",
+   "agreement": {
+    "intra_school_pairs": [],
+    "most_divergent_cross_pairs": []
+   }
+  },
+  {
+   "school_id": "SCH_KAOZHENG",
+   "name": "考證學派（日本漢方考據）",
+   "paradigm": "文獻考據與版本校勘，重異文、訓詁與出典",
+   "members": [
+    {
+     "name": "丹波元簡",
+     "book_dirs": [
+      "傷寒論輯義"
+     ],
+     "role": "《輯義》集諸注而考辨"
+    },
+    {
+     "name": "丹波元胤",
+     "book_dirs": [
+      "中寒論辯證廣注"
+     ],
+     "role": "承家學"
+    }
+   ],
+   "scope": "適於版本異文與出典考證；臨床發揮非其所長",
+   "opposed_to": [],
+   "source_level": "posthoc_induction",
+   "agreement": {
+    "intra_school_pairs": [],
+    "most_divergent_cross_pairs": [
+     {
+      "a": "丹波元簡",
+      "b": "方有執",
+      "mean_term_agreement": 0.0994,
+      "n_shared_clauses": 283
+     },
+     {
+      "a": "丹波元簡",
+      "b": "黃元御",
+      "mean_term_agreement": 0.1496,
+      "n_shared_clauses": 37
+     },
+     {
+      "a": "丹波元簡",
+      "b": "尤怡",
+      "mean_term_agreement": 0.1585,
+      "n_shared_clauses": 274
+     }
+    ]
+   }
+  },
+  {
+   "school_id": "SCH_SONG_LINZHENG",
+   "name": "宋代傷寒臨證派",
+   "paradigm": "以證類方、以歌訣類證普及仲景學（傷寒九十論為現存最早醫案體）",
+   "members": [
+    {
+     "name": "許叔微",
+     "book_dirs": [
+      "傷寒九十論",
+      "傷寒發微論",
+      "傷寒百證歌"
+     ],
+     "role": "以醫案證經方"
+    },
+    {
+     "name": "龐安石",
+     "book_dirs": [
+      "傷寒總病論",
+      "傷寒總病論_1"
+     ],
+     "role": "龐安時，廣其治法"
+    },
+    {
+     "name": "郭雍",
+     "book_dirs": [
+      "仲景傷寒補亡論"
+     ],
+     "role": "補亡輯佚"
+    }
+   ],
+   "scope": "適於早期傳承與醫案研究",
+   "opposed_to": [],
+   "source_level": "posthoc_induction",
+   "agreement": {
+    "intra_school_pairs": [],
+    "most_divergent_cross_pairs": []
+   }
+  },
+  {
+   "school_id": "SCH_JINGFANG_SHIYAN",
+   "name": "近代經方實驗派",
+   "paradigm": "以臨床實案驗證經方方證，主張方證對應的實效性",
+   "members": [
+    {
+     "name": "曹穎甫",
+     "book_dirs": [
+      "經方實驗錄",
+      "曹氏傷寒金匱發微合刊"
+     ],
+     "role": "《經方實驗錄》百年實案"
+    }
+   ],
+   "scope": "適於方證外部效度研究（本庫醫案回放基準即用其實案）",
+   "opposed_to": [],
+   "source_level": "posthoc_induction",
+   "agreement": {
+    "intra_school_pairs": [],
+    "most_divergent_cross_pairs": []
+   }
+  }
+ ]
+}

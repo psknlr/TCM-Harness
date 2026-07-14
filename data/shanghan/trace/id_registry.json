@@ -1,0 +1,1449 @@
+{
+ "note": "統一知識標識註冊表：ID 全確定（排序編號/拼音 slug）；clause_id 沿用 SHL_SONGBEN_xxxx；SchoolID/ClaimID 見 schools.json / claims.json；CitationEdgeID 見引文邊資產。",
+ "work_shl": {
+  "work_id": "WORK_SHL",
+  "title": "傷寒論",
+  "author": "張仲景",
+  "dynasty": "東漢",
+  "dynasty_order": 0
+ },
+ "works": [
+  {
+   "work_id": "WORK_001",
+   "book_dir": "傷寒兼證析義",
+   "title": "傷寒兼證析義",
+   "author": "張倬",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "jingui"
+  },
+  {
+   "work_id": "WORK_002",
+   "book_dir": "中寒論辯證廣注",
+   "title": "中寒論辯證廣注",
+   "author": "丹波元胤",
+   "dynasty": "日本",
+   "dynasty_order": 55,
+   "dynasty_overridden": true,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_003",
+   "book_dir": "仲景傷寒補亡論",
+   "title": "仲景傷寒補亡論",
+   "author": "郭雍",
+   "dynasty": "宋",
+   "dynasty_order": 20,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_004",
+   "book_dir": "傷寒九十論",
+   "title": "傷寒九十論",
+   "author": "許叔微",
+   "dynasty": "宋",
+   "dynasty_order": 20,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_005",
+   "book_dir": "傷寒來蘇集",
+   "title": "傷寒來蘇集",
+   "author": "柯琴",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "C",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_006",
+   "book_dir": "傷寒六書",
+   "title": "傷寒六書",
+   "author": "陶華",
+   "dynasty": "明",
+   "dynasty_order": 40,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_007",
+   "book_dir": "傷寒大白",
+   "title": "傷寒大白",
+   "author": "高世栻",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_008",
+   "book_dir": "傷寒審證表",
+   "title": "傷寒審證表",
+   "author": "",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_009",
+   "book_dir": "傷寒尋源",
+   "title": "傷寒尋源",
+   "author": "呂震名",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_010",
+   "book_dir": "傷寒心要_1",
+   "title": "傷寒心要",
+   "author": "劉完素",
+   "dynasty": "金",
+   "dynasty_order": 25,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_011",
+   "book_dir": "傷寒心鏡別集",
+   "title": "傷寒心鏡別集",
+   "author": "張從正",
+   "dynasty": "金",
+   "dynasty_order": 25,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_012",
+   "book_dir": "傷寒恆論",
+   "title": "傷寒恆論",
+   "author": "",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": true,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_013",
+   "book_dir": "傷寒懸解",
+   "title": "傷寒懸解",
+   "author": "黃元御",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "C",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_014",
+   "book_dir": "傷寒括要",
+   "title": "傷寒括要",
+   "author": "李中梓",
+   "dynasty": "明",
+   "dynasty_order": 40,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_015",
+   "book_dir": "傷寒指掌",
+   "title": "傷寒指掌",
+   "author": "吳坤安",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_016",
+   "book_dir": "傷寒捷訣",
+   "title": "傷寒捷訣",
+   "author": "嚴則庵 裘慶元",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_017",
+   "book_dir": "傷寒明理論",
+   "title": "傷寒明理論",
+   "author": "成無己",
+   "dynasty": "宋",
+   "dynasty_order": 20,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_018",
+   "book_dir": "傷寒明理論_1",
+   "title": "傷寒明理論",
+   "author": "成無己",
+   "dynasty": "金",
+   "dynasty_order": 25,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_019",
+   "book_dir": "傷寒標本心法類萃",
+   "title": "傷寒標本心法類萃",
+   "author": "劉完素",
+   "dynasty": "金",
+   "dynasty_order": 25,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_020",
+   "book_dir": "傷寒標本心法類萃_1",
+   "title": "傷寒標本心法類萃",
+   "author": "劉完素",
+   "dynasty": "金",
+   "dynasty_order": 25,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_021",
+   "book_dir": "傷寒法祖",
+   "title": "傷寒法祖",
+   "author": "任越庵",
+   "dynasty": "宋",
+   "dynasty_order": 20,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_022",
+   "book_dir": "傷寒溯源集",
+   "title": "傷寒溯源集",
+   "author": "錢潢",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "C",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_023",
+   "book_dir": "傷寒發微論",
+   "title": "傷寒發微論",
+   "author": "許叔微",
+   "dynasty": "宋",
+   "dynasty_order": 20,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_024",
+   "book_dir": "傷寒百證歌",
+   "title": "傷寒百證歌",
+   "author": "許叔微",
+   "dynasty": "宋",
+   "dynasty_order": 20,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_025",
+   "book_dir": "傷寒直格",
+   "title": "傷寒直格",
+   "author": "",
+   "dynasty": "金",
+   "dynasty_order": 25,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_026",
+   "book_dir": "傷寒直格_1",
+   "title": "傷寒直格",
+   "author": "劉完素",
+   "dynasty": "金",
+   "dynasty_order": 25,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_027",
+   "book_dir": "傷寒總病論",
+   "title": "傷寒總病論",
+   "author": "龐安石",
+   "dynasty": "宋",
+   "dynasty_order": 20,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_028",
+   "book_dir": "傷寒總病論_1",
+   "title": "傷寒總病論",
+   "author": "龐安石",
+   "dynasty": "宋",
+   "dynasty_order": 20,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_029",
+   "book_dir": "傷寒纘論",
+   "title": "傷寒纘論",
+   "author": "張璐",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_030",
+   "book_dir": "傷寒纘論_傷寒緒論",
+   "title": "傷寒纘論·傷寒緒論",
+   "author": "張璐",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_031",
+   "book_dir": "傷寒舌鑑",
+   "title": "傷寒舌鑑",
+   "author": "張登",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_032",
+   "book_dir": "傷寒補例",
+   "title": "傷寒補例",
+   "author": "周學海",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_033",
+   "book_dir": "傷寒論_千金翼方版",
+   "title": "傷寒論(千金翼方)",
+   "author": "張仲景",
+   "dynasty": "東漢",
+   "dynasty_order": 0,
+   "dynasty_overridden": false,
+   "layer": "B",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_034",
+   "book_dir": "傷寒論_宋本",
+   "title": "傷寒論(宋本)",
+   "author": "張仲景",
+   "dynasty": "東漢",
+   "dynasty_order": 0,
+   "dynasty_overridden": false,
+   "layer": "A",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_035",
+   "book_dir": "傷寒論_條文版",
+   "title": "傷寒論",
+   "author": "張仲景",
+   "dynasty": "東漢",
+   "dynasty_order": 0,
+   "dynasty_overridden": false,
+   "layer": "A",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_036",
+   "book_dir": "傷寒論條辨",
+   "title": "傷寒論條辨",
+   "author": "方有執",
+   "dynasty": "明",
+   "dynasty_order": 40,
+   "dynasty_overridden": false,
+   "layer": "C",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_037",
+   "book_dir": "傷寒論條辨_1",
+   "title": "傷寒論條辨",
+   "author": "方有執",
+   "dynasty": "明",
+   "dynasty_order": 40,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_038",
+   "book_dir": "傷寒論注",
+   "title": "傷寒論注",
+   "author": "柯琴",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "C",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_039",
+   "book_dir": "傷寒論綱目",
+   "title": "傷寒論綱目",
+   "author": "沈金鰲",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_040",
+   "book_dir": "傷寒論翼",
+   "title": "傷寒論翼",
+   "author": "柯琴",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_041",
+   "book_dir": "傷寒論輯義",
+   "title": "傷寒論輯義",
+   "author": "丹波元珍",
+   "dynasty": "日本",
+   "dynasty_order": 55,
+   "dynasty_overridden": true,
+   "layer": "C",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_042",
+   "book_dir": "傷寒論辯證廣注",
+   "title": "傷寒論辯證廣注",
+   "author": "汪琥",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_043",
+   "book_dir": "傷寒論類方",
+   "title": "傷寒論類方",
+   "author": "徐靈胎",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "D",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_044",
+   "book_dir": "傷寒論類方_1",
+   "title": "傷寒論類方",
+   "author": "徐大椿",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_045",
+   "book_dir": "傷寒貫珠集",
+   "title": "傷寒貫珠集",
+   "author": "尤怡",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "C",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_046",
+   "book_dir": "傷寒貫珠集_1",
+   "title": "傷寒貫珠集",
+   "author": "尤怡",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_047",
+   "book_dir": "傷寒辨要箋記",
+   "title": "傷寒辨要箋記",
+   "author": "程門雪",
+   "dynasty": "民國",
+   "dynasty_order": 60,
+   "dynasty_overridden": true,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_048",
+   "book_dir": "傷寒醫訣串解",
+   "title": "傷寒醫訣串解",
+   "author": "陳念祖",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_049",
+   "book_dir": "傷寒附翼",
+   "title": "傷寒附翼",
+   "author": "柯琴",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_050",
+   "book_dir": "傷寒雜病論_桂本",
+   "title": "傷寒雜病論(桂本)",
+   "author": "張仲景",
+   "dynasty": "東漢",
+   "dynasty_order": 0,
+   "dynasty_overridden": false,
+   "layer": "B",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_051",
+   "book_dir": "劉河間傷寒醫鑑",
+   "title": "劉河間傷寒醫鑑",
+   "author": "馬宗素",
+   "dynasty": "元",
+   "dynasty_order": 30,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_052",
+   "book_dir": "張卿子傷寒論",
+   "title": "張卿子傷寒論",
+   "author": "張卿子",
+   "dynasty": "清",
+   "dynasty_order": 50,
+   "dynasty_overridden": false,
+   "layer": "C",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_053",
+   "book_dir": "敖氏傷寒金鏡錄",
+   "title": "敖氏傷寒金鏡錄",
+   "author": "杜本",
+   "dynasty": "元",
+   "dynasty_order": 30,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_054",
+   "book_dir": "河間傷寒心要",
+   "title": "河間傷寒心要",
+   "author": "鎦洪",
+   "dynasty": "金",
+   "dynasty_order": 25,
+   "dynasty_overridden": false,
+   "layer": "P",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_055",
+   "book_dir": "註解傷寒論",
+   "title": "註解傷寒論",
+   "author": "成無己",
+   "dynasty": "金",
+   "dynasty_order": 25,
+   "dynasty_overridden": false,
+   "layer": "C",
+   "category": "shanghan"
+  },
+  {
+   "work_id": "WORK_056",
+   "book_dir": "曹氏傷寒金匱發微合刊",
+   "title": "曹氏傷寒金匱發微合刊",
+   "author": "曹穎甫",
+   "dynasty": "民國",
+   "dynasty_order": 60,
+   "dynasty_overridden": true,
+   "layer": "P",
+   "category": "shanghan_jingui_combined"
+  },
+  {
+   "work_id": "WORK_057",
+   "book_dir": "經方實驗錄",
+   "title": "經方實驗錄",
+   "author": "曹穎甫",
+   "dynasty": "民國",
+   "dynasty_order": 60,
+   "dynasty_overridden": true,
+   "layer": "P",
+   "category": "yian_cases"
+  }
+ ],
+ "work_of_dir": {
+  "傷寒兼證析義": "WORK_001",
+  "中寒論辯證廣注": "WORK_002",
+  "仲景傷寒補亡論": "WORK_003",
+  "傷寒九十論": "WORK_004",
+  "傷寒來蘇集": "WORK_005",
+  "傷寒六書": "WORK_006",
+  "傷寒大白": "WORK_007",
+  "傷寒審證表": "WORK_008",
+  "傷寒尋源": "WORK_009",
+  "傷寒心要_1": "WORK_010",
+  "傷寒心鏡別集": "WORK_011",
+  "傷寒恆論": "WORK_012",
+  "傷寒懸解": "WORK_013",
+  "傷寒括要": "WORK_014",
+  "傷寒指掌": "WORK_015",
+  "傷寒捷訣": "WORK_016",
+  "傷寒明理論": "WORK_017",
+  "傷寒明理論_1": "WORK_018",
+  "傷寒標本心法類萃": "WORK_019",
+  "傷寒標本心法類萃_1": "WORK_020",
+  "傷寒法祖": "WORK_021",
+  "傷寒溯源集": "WORK_022",
+  "傷寒發微論": "WORK_023",
+  "傷寒百證歌": "WORK_024",
+  "傷寒直格": "WORK_025",
+  "傷寒直格_1": "WORK_026",
+  "傷寒總病論": "WORK_027",
+  "傷寒總病論_1": "WORK_028",
+  "傷寒纘論": "WORK_029",
+  "傷寒纘論_傷寒緒論": "WORK_030",
+  "傷寒舌鑑": "WORK_031",
+  "傷寒補例": "WORK_032",
+  "傷寒論_千金翼方版": "WORK_033",
+  "傷寒論_宋本": "WORK_034",
+  "傷寒論_條文版": "WORK_035",
+  "傷寒論條辨": "WORK_036",
+  "傷寒論條辨_1": "WORK_037",
+  "傷寒論注": "WORK_038",
+  "傷寒論綱目": "WORK_039",
+  "傷寒論翼": "WORK_040",
+  "傷寒論輯義": "WORK_041",
+  "傷寒論辯證廣注": "WORK_042",
+  "傷寒論類方": "WORK_043",
+  "傷寒論類方_1": "WORK_044",
+  "傷寒貫珠集": "WORK_045",
+  "傷寒貫珠集_1": "WORK_046",
+  "傷寒辨要箋記": "WORK_047",
+  "傷寒醫訣串解": "WORK_048",
+  "傷寒附翼": "WORK_049",
+  "傷寒雜病論_桂本": "WORK_050",
+  "劉河間傷寒醫鑑": "WORK_051",
+  "張卿子傷寒論": "WORK_052",
+  "敖氏傷寒金鏡錄": "WORK_053",
+  "河間傷寒心要": "WORK_054",
+  "註解傷寒論": "WORK_055",
+  "曹氏傷寒金匱發微合刊": "WORK_056",
+  "經方實驗錄": "WORK_057"
+ },
+ "editions": [
+  {
+   "edition_id": "ED_SONGBEN",
+   "work_id": "WORK_SHL",
+   "book_dir": "傷寒論_條文版",
+   "label": "宋本（趙開美本，條文版編號）"
+  },
+  {
+   "edition_id": "ED_SONGBEN_FULL",
+   "work_id": "WORK_SHL",
+   "book_dir": "傷寒論_宋本",
+   "label": "宋本（含輔助篇章）"
+  },
+  {
+   "edition_id": "ED_VARIANT_1",
+   "work_id": "WORK_SHL",
+   "book_dir": "傷寒雜病論_桂本",
+   "label": "傷寒雜病論_桂本"
+  },
+  {
+   "edition_id": "ED_VARIANT_2",
+   "work_id": "WORK_SHL",
+   "book_dir": "傷寒論_千金翼方版",
+   "label": "傷寒論_千金翼方版"
+  }
+ ],
+ "formulas": [
+  {
+   "formula_id": "F_SANXIAOBAI_SAN",
+   "name": "三物小白散",
+   "rule_id": "FPR_0001"
+  },
+  {
+   "formula_id": "F_GANJIANGFUZI_TANG",
+   "name": "乾薑附子湯",
+   "rule_id": "FPR_0002"
+  },
+  {
+   "formula_id": "F_GANJIANGHUANGQINHUANGLIANRENSHEN_TANG",
+   "name": "乾薑黃芩黃連人參湯",
+   "rule_id": "FPR_0003"
+  },
+  {
+   "formula_id": "F_WULING_SAN",
+   "name": "五苓散",
+   "rule_id": "FPR_0004"
+  },
+  {
+   "formula_id": "F_SHIZAO_TANG",
+   "name": "十棗湯",
+   "rule_id": "FPR_0005"
+  },
+  {
+   "formula_id": "F_BANXIASANJI_TANG",
+   "name": "半夏散及湯",
+   "rule_id": "FPR_0006"
+  },
+  {
+   "formula_id": "F_BANXIAXIEXIN_TANG",
+   "name": "半夏瀉心湯",
+   "rule_id": "FPR_0007"
+  },
+  {
+   "formula_id": "F_HOUPOSHENGJIANGBANXIAGANCAORENSHEN_TANG",
+   "name": "厚朴生薑半夏甘草人參湯",
+   "rule_id": "FPR_0008"
+  },
+  {
+   "formula_id": "F_QUGUIJIABAIZHU_TANG",
+   "name": "去桂加白朮湯",
+   "rule_id": "FPR_0009"
+  },
+  {
+   "formula_id": "F_WUZHUYU_TANG",
+   "name": "吳茱萸湯",
+   "rule_id": "FPR_0010"
+  },
+  {
+   "formula_id": "F_SINIJIARENSHEN_TANG",
+   "name": "四逆加人參湯",
+   "rule_id": "FPR_0011"
+  },
+  {
+   "formula_id": "F_SINI_SAN",
+   "name": "四逆散",
+   "rule_id": "FPR_0012"
+  },
+  {
+   "formula_id": "F_SINI_TANG",
+   "name": "四逆湯",
+   "rule_id": "FPR_0013"
+  },
+  {
+   "formula_id": "F_DACHENGQI_TANG",
+   "name": "大承氣湯",
+   "rule_id": "FPR_0014"
+  },
+  {
+   "formula_id": "F_DACHAIHU_TANG",
+   "name": "大柴胡湯",
+   "rule_id": "FPR_0015"
+  },
+  {
+   "formula_id": "F_DAXIANXIONG_WAN",
+   "name": "大陷胸丸",
+   "rule_id": "FPR_0016"
+  },
+  {
+   "formula_id": "F_DAXIANXIONG_TANG",
+   "name": "大陷胸湯",
+   "rule_id": "FPR_0017"
+  },
+  {
+   "formula_id": "F_DAQINGLONG_TANG",
+   "name": "大青龍湯",
+   "rule_id": "FPR_0018"
+  },
+  {
+   "formula_id": "F_DAHUANGHUANGLIANXIEXIN_TANG",
+   "name": "大黃黃連瀉心湯",
+   "rule_id": "FPR_0019"
+  },
+  {
+   "formula_id": "F_XIAOJIANZHONG_TANG",
+   "name": "小建中湯",
+   "rule_id": "FPR_0020"
+  },
+  {
+   "formula_id": "F_XIAOCHENGQI_TANG",
+   "name": "小承氣湯",
+   "rule_id": "FPR_0021"
+  },
+  {
+   "formula_id": "F_XIAOCHAIHU_TANG",
+   "name": "小柴胡湯",
+   "rule_id": "FPR_0022"
+  },
+  {
+   "formula_id": "F_XIAOXIANXIONG_TANG",
+   "name": "小陷胸湯",
+   "rule_id": "FPR_0023"
+  },
+  {
+   "formula_id": "F_XIAOQINGLONG_TANG",
+   "name": "小青龍湯",
+   "rule_id": "FPR_0024"
+  },
+  {
+   "formula_id": "F_DIDANG_WAN",
+   "name": "抵當丸",
+   "rule_id": "FPR_0025"
+  },
+  {
+   "formula_id": "F_DIDANG_TANG",
+   "name": "抵當湯",
+   "rule_id": "FPR_0026"
+  },
+  {
+   "formula_id": "F_WENGE_SAN",
+   "name": "文蛤散",
+   "rule_id": "FPR_0027"
+  },
+  {
+   "formula_id": "F_XUANFUDAIZHE_TANG",
+   "name": "旋覆代赭湯",
+   "rule_id": "FPR_0028"
+  },
+  {
+   "formula_id": "F_ZHISHIZHIZICHI_TANG",
+   "name": "枳實梔子豉湯",
+   "rule_id": "FPR_0029"
+  },
+  {
+   "formula_id": "F_CHAIHUJIAMANGXIAO_TANG",
+   "name": "柴胡加芒消湯",
+   "rule_id": "FPR_0030"
+  },
+  {
+   "formula_id": "F_CHAIHUJIALONGGUMULI_TANG",
+   "name": "柴胡加龍骨牡蠣湯",
+   "rule_id": "FPR_0031"
+  },
+  {
+   "formula_id": "F_CHAIHUGUIZHIGANJIANG_TANG",
+   "name": "柴胡桂枝乾薑湯",
+   "rule_id": "FPR_0032"
+  },
+  {
+   "formula_id": "F_CHAIHUGUIZHI_TANG",
+   "name": "柴胡桂枝湯",
+   "rule_id": "FPR_0033"
+  },
+  {
+   "formula_id": "F_GUIZHIERYUEBIYI_TANG",
+   "name": "桂枝二越婢一湯",
+   "rule_id": "FPR_0034"
+  },
+  {
+   "formula_id": "F_GUIZHIERMAHUANGYI_TANG",
+   "name": "桂枝二麻黃一湯",
+   "rule_id": "FPR_0035"
+  },
+  {
+   "formula_id": "F_GUIZHIRENSHEN_TANG",
+   "name": "桂枝人參湯",
+   "rule_id": "FPR_0036"
+  },
+  {
+   "formula_id": "F_GUIZHIJIAHOUPOXINGZI_TANG",
+   "name": "桂枝加厚朴杏子湯",
+   "rule_id": "FPR_0037"
+  },
+  {
+   "formula_id": "F_GUIZHIJIADAHUANG_TANG",
+   "name": "桂枝加大黃湯",
+   "rule_id": "FPR_0038"
+  },
+  {
+   "formula_id": "F_GUIZHIJIAGUI_TANG",
+   "name": "桂枝加桂湯",
+   "rule_id": "FPR_0039"
+  },
+  {
+   "formula_id": "F_GUIZHIJIASHAOYAO_TANG",
+   "name": "桂枝加芍藥湯",
+   "rule_id": "FPR_0040"
+  },
+  {
+   "formula_id": "F_GUIZHIJIASHAOYAOSHENGJIANGGEYILIANGRENSHENSANLIANGXINJIA_TANG",
+   "name": "桂枝加芍藥生薑各一兩人參三兩新加湯",
+   "rule_id": "FPR_0041"
+  },
+  {
+   "formula_id": "F_GUIZHIJIAGEGEN_TANG",
+   "name": "桂枝加葛根湯",
+   "rule_id": "FPR_0042"
+  },
+  {
+   "formula_id": "F_GUIZHIJIAFUZI_TANG",
+   "name": "桂枝加附子湯",
+   "rule_id": "FPR_0043"
+  },
+  {
+   "formula_id": "F_GUIZHIQUGUIJIAFULINGBAIZHU_TANG",
+   "name": "桂枝去桂加茯苓白朮湯",
+   "rule_id": "FPR_0044"
+  },
+  {
+   "formula_id": "F_GUIZHIQUSHAOYAOJIASHUQIMULILONGGUJIUNI_TANG",
+   "name": "桂枝去芍藥加蜀漆牡蠣龍骨救逆湯",
+   "rule_id": "FPR_0045"
+  },
+  {
+   "formula_id": "F_GUIZHIQUSHAOYAOJIAFUZI_TANG",
+   "name": "桂枝去芍藥加附子湯",
+   "rule_id": "FPR_0046"
+  },
+  {
+   "formula_id": "F_GUIZHIQUSHAOYAO_TANG",
+   "name": "桂枝去芍藥湯",
+   "rule_id": "FPR_0047"
+  },
+  {
+   "formula_id": "F_GUIZHI_TANG",
+   "name": "桂枝湯",
+   "rule_id": "FPR_0048"
+  },
+  {
+   "formula_id": "F_GUIZHIGANCAO_TANG",
+   "name": "桂枝甘草湯",
+   "rule_id": "FPR_0049"
+  },
+  {
+   "formula_id": "F_GUIZHIGANCAOLONGGUMULI_TANG",
+   "name": "桂枝甘草龍骨牡蠣湯",
+   "rule_id": "FPR_0050"
+  },
+  {
+   "formula_id": "F_GUIZHIFUZI_TANG",
+   "name": "桂枝附子湯",
+   "rule_id": "FPR_0051"
+  },
+  {
+   "formula_id": "F_GUIZHIMAHUANGGEBAN_TANG",
+   "name": "桂枝麻黃各半湯",
+   "rule_id": "FPR_0052"
+  },
+  {
+   "formula_id": "F_TAOHECHENGQI_TANG",
+   "name": "桃核承氣湯",
+   "rule_id": "FPR_0053"
+  },
+  {
+   "formula_id": "F_TAOHUA_TANG",
+   "name": "桃花湯",
+   "rule_id": "FPR_0054"
+  },
+  {
+   "formula_id": "F_JIEGENG_TANG",
+   "name": "桔梗湯",
+   "rule_id": "FPR_0055"
+  },
+  {
+   "formula_id": "F_ZHIZIGANJIANG_TANG",
+   "name": "梔子乾薑湯",
+   "rule_id": "FPR_0056"
+  },
+  {
+   "formula_id": "F_ZHIZIHOUPO_TANG",
+   "name": "梔子厚朴湯",
+   "rule_id": "FPR_0057"
+  },
+  {
+   "formula_id": "F_ZHIZIBOPI_TANG",
+   "name": "梔子檗皮湯",
+   "rule_id": "FPR_0058"
+  },
+  {
+   "formula_id": "F_ZHIZIGANCAOCHI_TANG",
+   "name": "梔子甘草豉湯",
+   "rule_id": "FPR_0059"
+  },
+  {
+   "formula_id": "F_ZHIZISHENGJIANGCHI_TANG",
+   "name": "梔子生薑豉湯",
+   "rule_id": "FPR_0060"
+  },
+  {
+   "formula_id": "F_ZHIZICHI_TANG",
+   "name": "梔子豉湯",
+   "rule_id": "FPR_0061"
+  },
+  {
+   "formula_id": "F_ZHIGANCAO_TANG",
+   "name": "炙甘草湯",
+   "rule_id": "FPR_0062"
+  },
+  {
+   "formula_id": "F_WUMEI_WAN",
+   "name": "烏梅丸",
+   "rule_id": "FPR_0063"
+  },
+  {
+   "formula_id": "F_SHAOKUN_SAN",
+   "name": "燒褌散",
+   "rule_id": "FPR_0064"
+  },
+  {
+   "formula_id": "F_MULIZEXIE_SAN",
+   "name": "牡蠣澤瀉散",
+   "rule_id": "FPR_0065"
+  },
+  {
+   "formula_id": "F_LIZHONG_WAN",
+   "name": "理中丸",
+   "rule_id": "FPR_0066"
+  },
+  {
+   "formula_id": "F_GUADI_SAN",
+   "name": "瓜蒂散",
+   "rule_id": "FPR_0067"
+  },
+  {
+   "formula_id": "F_GANCAO_TANG",
+   "name": "甘草湯",
+   "rule_id": "FPR_0068"
+  },
+  {
+   "formula_id": "F_GANCAOXIEXIN_TANG",
+   "name": "甘草瀉心湯",
+   "rule_id": "FPR_0069"
+  },
+  {
+   "formula_id": "F_GANCAOFUZI_TANG",
+   "name": "甘草附子湯",
+   "rule_id": "FPR_0070"
+  },
+  {
+   "formula_id": "F_SHENGJIANGXIEXIN_TANG",
+   "name": "生薑瀉心湯",
+   "rule_id": "FPR_0071"
+  },
+  {
+   "formula_id": "F_DANGGUISINIJIAWUZHUYUSHENGJIANG_TANG",
+   "name": "當歸四逆加吳茱萸生薑湯",
+   "rule_id": "FPR_0072"
+  },
+  {
+   "formula_id": "F_DANGGUISINI_TANG",
+   "name": "當歸四逆湯",
+   "rule_id": "FPR_0073"
+  },
+  {
+   "formula_id": "F_BAIHUJIARENSHEN_TANG",
+   "name": "白虎加人參湯",
+   "rule_id": "FPR_0074"
+  },
+  {
+   "formula_id": "F_BAIHU_TANG",
+   "name": "白虎湯",
+   "rule_id": "FPR_0075"
+  },
+  {
+   "formula_id": "F_BAITONGJIAZHUDANZHI_TANG",
+   "name": "白通加豬膽汁湯",
+   "rule_id": "FPR_0076"
+  },
+  {
+   "formula_id": "F_BAITONG_TANG",
+   "name": "白通湯",
+   "rule_id": "FPR_0077"
+  },
+  {
+   "formula_id": "F_BAITOUWENG_TANG",
+   "name": "白頭翁湯",
+   "rule_id": "FPR_0078"
+  },
+  {
+   "formula_id": "F_ZHENWU_TANG",
+   "name": "真武湯",
+   "rule_id": "FPR_0079"
+  },
+  {
+   "formula_id": "F_YUYULIANG_WAN",
+   "name": "禹餘糧丸",
+   "rule_id": "FPR_0080"
+  },
+  {
+   "formula_id": "F_ZHUYESHIGAO_TANG",
+   "name": "竹葉石膏湯",
+   "rule_id": "FPR_0081"
+  },
+  {
+   "formula_id": "F_SHAOYAOGANCAO_TANG",
+   "name": "芍藥甘草湯",
+   "rule_id": "FPR_0082"
+  },
+  {
+   "formula_id": "F_SHAOYAOGANCAOFUZI_TANG",
+   "name": "芍藥甘草附子湯",
+   "rule_id": "FPR_0083"
+  },
+  {
+   "formula_id": "F_KUJIU_TANG",
+   "name": "苦酒湯",
+   "rule_id": "FPR_0084"
+  },
+  {
+   "formula_id": "F_FULINGSINI_TANG",
+   "name": "茯苓四逆湯",
+   "rule_id": "FPR_0085"
+  },
+  {
+   "formula_id": "F_FULINGGUIZHIGANCAODAZAO_TANG",
+   "name": "茯苓桂枝甘草大棗湯",
+   "rule_id": "FPR_0086"
+  },
+  {
+   "formula_id": "F_FULINGGUIZHIBAIZHUGANCAO_TANG",
+   "name": "茯苓桂枝白朮甘草湯",
+   "rule_id": "FPR_0087"
+  },
+  {
+   "formula_id": "F_FULINGGANCAO_TANG",
+   "name": "茯苓甘草湯",
+   "rule_id": "FPR_0088"
+  },
+  {
+   "formula_id": "F_YINCHENHAO_TANG",
+   "name": "茵陳蒿湯",
+   "rule_id": "FPR_0089"
+  },
+  {
+   "formula_id": "F_GEGENJIABANXIA_TANG",
+   "name": "葛根加半夏湯",
+   "rule_id": "FPR_0090"
+  },
+  {
+   "formula_id": "F_GEGEN_TANG",
+   "name": "葛根湯",
+   "rule_id": "FPR_0091"
+  },
+  {
+   "formula_id": "F_GEGENHUANGQINHUANGLIAN_TANG",
+   "name": "葛根黃芩黃連湯",
+   "rule_id": "FPR_0092"
+  },
+  {
+   "formula_id": "F_MIJIANDAO",
+   "name": "蜜煎導",
+   "rule_id": "FPR_0093"
+  },
+  {
+   "formula_id": "F_TIAOWEICHENGQI_TANG",
+   "name": "調胃承氣湯",
+   "rule_id": "FPR_0094"
+  },
+  {
+   "formula_id": "F_ZHUFU_TANG",
+   "name": "豬膚湯",
+   "rule_id": "FPR_0095"
+  },
+  {
+   "formula_id": "F_ZHUDANZHI",
+   "name": "豬膽汁",
+   "rule_id": "FPR_0096"
+  },
+  {
+   "formula_id": "F_ZHULING_TANG",
+   "name": "豬苓湯",
+   "rule_id": "FPR_0097"
+  },
+  {
+   "formula_id": "F_CHISHIZHIYUYULIANG_TANG",
+   "name": "赤石脂禹餘糧湯",
+   "rule_id": "FPR_0098"
+  },
+  {
+   "formula_id": "F_TONGMAISINIJIAZHUDANZHI_TANG",
+   "name": "通脈四逆加豬膽汁湯",
+   "rule_id": "FPR_0099"
+  },
+  {
+   "formula_id": "F_TONGMAISINI_TANG",
+   "name": "通脈四逆湯",
+   "rule_id": "FPR_0100"
+  },
+  {
+   "formula_id": "F_FUZI_TANG",
+   "name": "附子湯",
+   "rule_id": "FPR_0101"
+  },
+  {
+   "formula_id": "F_FUZIXIEXIN_TANG",
+   "name": "附子瀉心湯",
+   "rule_id": "FPR_0102"
+  },
+  {
+   "formula_id": "F_MAZIREN_WAN",
+   "name": "麻子仁丸",
+   "rule_id": "FPR_0103"
+  },
+  {
+   "formula_id": "F_MAHUANGSHENGMA_TANG",
+   "name": "麻黃升麻湯",
+   "rule_id": "FPR_0104"
+  },
+  {
+   "formula_id": "F_MAHUANGXINGRENGANCAOSHIGAO_TANG",
+   "name": "麻黃杏仁甘草石膏湯",
+   "rule_id": "FPR_0105"
+  },
+  {
+   "formula_id": "F_MAHUANG_TANG",
+   "name": "麻黃湯",
+   "rule_id": "FPR_0106"
+  },
+  {
+   "formula_id": "F_MAHUANGXIXINFUZI_TANG",
+   "name": "麻黃細辛附子湯",
+   "rule_id": "FPR_0107"
+  },
+  {
+   "formula_id": "F_MAHUANGLIANYAOCHIXIAODOU_TANG",
+   "name": "麻黃連軺赤小豆湯",
+   "rule_id": "FPR_0108"
+  },
+  {
+   "formula_id": "F_MAHUANGFUZIGANCAO_TANG",
+   "name": "麻黃附子甘草湯",
+   "rule_id": "FPR_0109"
+  },
+  {
+   "formula_id": "F_HUANGQINJIABANXIASHENGJIANG_TANG",
+   "name": "黃芩加半夏生薑湯",
+   "rule_id": "FPR_0110"
+  },
+  {
+   "formula_id": "F_HUANGQIN_TANG",
+   "name": "黃芩湯",
+   "rule_id": "FPR_0111"
+  },
+  {
+   "formula_id": "F_HUANGLIAN_TANG",
+   "name": "黃連湯",
+   "rule_id": "FPR_0112"
+  },
+  {
+   "formula_id": "F_HUANGLIANEJIAO_TANG",
+   "name": "黃連阿膠湯",
+   "rule_id": "FPR_0113"
+  }
+ ],
+ "methods": [
+  {
+   "method_id": "M_TR_001",
+   "name": "下法",
+   "polarity": "indicated"
+  },
+  {
+   "method_id": "M_TR_002",
+   "name": "利水",
+   "polarity": "indicated"
+  },
+  {
+   "method_id": "M_TR_003",
+   "name": "吐法",
+   "polarity": "indicated"
+  },
+  {
+   "method_id": "M_TR_004",
+   "name": "和法",
+   "polarity": "indicated"
+  },
+  {
+   "method_id": "M_TR_005",
+   "name": "救逆",
+   "polarity": "indicated"
+  },
+  {
+   "method_id": "M_TR_006",
+   "name": "汗法",
+   "polarity": "indicated"
+  },
+  {
+   "method_id": "M_TR_007",
+   "name": "溫法",
+   "polarity": "indicated"
+  },
+  {
+   "method_id": "M_TR_008",
+   "name": "補法",
+   "polarity": "indicated"
+  },
+  {
+   "method_id": "M_TR_009",
+   "name": "禁汗",
+   "polarity": "contraindicated"
+  },
+  {
+   "method_id": "M_TR_010",
+   "name": "禁下",
+   "polarity": "contraindicated"
+  },
+  {
+   "method_id": "M_TR_011",
+   "name": "禁吐",
+   "polarity": "contraindicated"
+  },
+  {
+   "method_id": "M_TR_012",
+   "name": "誤火",
+   "polarity": "mistreatment"
+  },
+  {
+   "method_id": "M_TR_013",
+   "name": "誤下",
+   "polarity": "mistreatment"
+  },
+  {
+   "method_id": "M_TR_014",
+   "name": "誤吐",
+   "polarity": "mistreatment"
+  },
+  {
+   "method_id": "M_TR_015",
+   "name": "誤汗",
+   "polarity": "mistreatment"
+  },
+  {
+   "method_id": "M_TR_016",
+   "name": "禁汗",
+   "polarity": "contraindicated"
+  },
+  {
+   "method_id": "M_TR_017",
+   "name": "汗法",
+   "polarity": "indicated"
+  },
+  {
+   "method_id": "M_TR_018",
+   "name": "誤汗",
+   "polarity": "mistreatment"
+  },
+  {
+   "method_id": "M_TR_019",
+   "name": "禁吐",
+   "polarity": "contraindicated"
+  },
+  {
+   "method_id": "M_TR_020",
+   "name": "吐法",
+   "polarity": "indicated"
+  },
+  {
+   "method_id": "M_TR_021",
+   "name": "禁下",
+   "polarity": "contraindicated"
+  },
+  {
+   "method_id": "M_TR_022",
+   "name": "下法",
+   "polarity": "indicated"
+  },
+  {
+   "method_id": "M_TR_023",
+   "name": "誤治綜合",
+   "polarity": "mistreatment"
+  }
+ ],
+ "syndromes": [
+  {
+   "syndrome_id": "S_TAIYANG",
+   "name": "太陽病"
+  },
+  {
+   "syndrome_id": "S_YANGMING",
+   "name": "陽明病"
+  },
+  {
+   "syndrome_id": "S_SHAOYANG",
+   "name": "少陽病"
+  },
+  {
+   "syndrome_id": "S_TAIYIN",
+   "name": "太陰病"
+  },
+  {
+   "syndrome_id": "S_SHAOYIN",
+   "name": "少陰病"
+  },
+  {
+   "syndrome_id": "S_JUEYIN",
+   "name": "厥陰病"
+  },
+  {
+   "syndrome_id": "S_HUOLUAN",
+   "name": "霍亂病"
+  },
+  {
+   "syndrome_id": "S_LAOFU",
+   "name": "陰陽易差後勞復病"
+  }
+ ],
+ "counts": {
+  "works": 57,
+  "editions": 4,
+  "formulas": 113,
+  "methods": 23,
+  "syndromes": 8
+ }
+}

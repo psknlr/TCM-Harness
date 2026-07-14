@@ -1,0 +1,2666 @@
+{
+ "name": "hermes-shanghanlun",
+ "description": "《傷寒論》自主規則挖掘與證據回源工具集（只讀、回源 clause_id）。",
+ "tool_spec_version": "1.2.0",
+ "openai_tools": [
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_search",
+    "description": "檢索《傷寒論》原文條文（BM25+結構化過濾+關係擴展）。返回帶 clause_id 的條文命中。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "query": {
+       "type": "string",
+       "description": "症狀/方名/脈象/治法等檢索詞"
+      },
+      "top_k": {
+       "type": "integer",
+       "default": 6
+      },
+      "six_channel": {
+       "type": "string",
+       "description": "可選六經過濾，如 太陽病"
+      },
+      "formula": {
+       "type": "string",
+       "description": "可選方劑過濾"
+      },
+      "expand": {
+       "type": "boolean",
+       "default": false,
+       "description": "關係圖譜擴展"
+      }
+     },
+     "required": [
+      "query"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_get_clause",
+    "description": "按條文號(1-398)或 clause_id 取條文全息：原文、實體標註、初始規則、條文關係。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "ref": {
+       "type": "string",
+       "description": "條文號或 SHL_SONGBEN_xxxx"
+      }
+     },
+     "required": [
+      "ref"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_match_formula",
+    "description": "醫師端方證匹配：依症狀/脈象返回候選方證規則與原文證據（輔助性質，不替代臨床）。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "symptoms": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
+      },
+      "pulse": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
+      },
+      "six_channel": {
+       "type": "string"
+      },
+      "top_k": {
+       "type": "integer",
+       "default": 5
+      }
+     },
+     "required": [
+      "symptoms"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_differential",
+    "description": "方證鑒別：給定 2-3 個方劑，返回多軸對比表與關鍵鑒別點及條文。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "formulas": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
+      }
+     },
+     "required": [
+      "formulas"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_six_channel",
+    "description": "六經規則：返回某經提綱、總括、亞型、主方、欲解時與禁忌/誤治條文。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "channel": {
+       "type": "string",
+       "description": "太陽病/陽明病/少陽病/太陰病/少陰病/厥陰病"
+      }
+     },
+     "required": [
+      "channel"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_formula_rule",
+    "description": "方證規則：返回某方的核心證/兼證/脈象/組成/加減方/禁忌與支持條文。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "formula": {
+       "type": "string"
+      }
+     },
+     "required": [
+      "formula"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_mistreatment",
+    "description": "誤治傳變圖譜：返回(誤治→變證→救治方→條文)路徑，可按關鍵詞過濾。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "query": {
+       "type": "string",
+       "description": "可選，如 誤下/結胸/火逆"
+      }
+     }
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_list_formulas",
+    "description": "列出規則庫中可用的方劑名稱（用於消歧或選擇）。",
+    "parameters": {
+     "type": "object",
+     "properties": {}
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_divergence_atlas",
+    "description": "注家分歧圖譜：9 部注本的對齊覆蓋、爭點條文榜、注家一致度矩陣與指紋；可按 clause_id 片段取單條的多注家記錄。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "clause": {
+       "type": "string",
+       "description": "可選 clause_id 片段，如 0012"
+      }
+     }
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_dose",
+    "description": "劑量計量層：某方的銖當量藥量比（學派無關）、三家折算總量與家族劑量演化邊；不給方名則返回全庫劑量摘要。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "formula": {
+       "type": "string",
+       "description": "可選方名，如 桂枝加芍藥湯"
+      }
+     }
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_corpus_stats",
+    "description": "傷寒論規則庫統計（領域統計，**非**笈成全庫統計）：條文/規則/關係/方證頻次/六經分佈等數字（科研引用用）。全庫書目統計請用 classics_library_stats。",
+    "parameters": {
+     "type": "object",
+     "properties": {}
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_eval_metrics",
+    "description": "客觀評測結果：遮方預測(LOCO)、醫案回放、證據接地率三大基準的當前指標與消融。",
+    "parameters": {
+     "type": "object",
+     "properties": {}
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_variants",
+    "description": "版本異文（B層）：某條文在桂林古本/千金翼方版的對齊異文與用字差異。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "ref": {
+       "type": "string",
+       "description": "條文號或 clause_id"
+      }
+     },
+     "required": [
+      "ref"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_relations",
+    "description": "條文關係圖譜遍歷：某條文的鄰接邊（同方族/鑒別/誤治傳變/禁忌/傳變/次序），支持按關係類型過濾——用於多跳推理與傳變鏈追蹤。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "ref": {
+       "type": "string",
+       "description": "條文號或 clause_id"
+      },
+      "relation_type": {
+       "type": "string",
+       "description": "可選：same_formula_family/differential/mistreatment_transformation/transmission/contraindication/sequence"
+      }
+     },
+     "required": [
+      "ref"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_therapy",
+    "description": "治法規則：汗/吐/下/和/溫/補/救逆/利水的適應指徵、代表方、禁例與誤施之變。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "method": {
+       "type": "string",
+       "description": "可選，如 汗法/下法/禁汗/誤下；不填返回總覽"
+      }
+     }
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_contraindication_check",
+    "description": "禁忌檢查（複合推理）：給定方劑與病人證候，返回該方原文禁忌、證候與方證的衝突（如無汗 vs 桂枝湯）及相關治法禁例——輔助性質，不替代臨床判斷。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "formula": {
+       "type": "string"
+      },
+      "symptoms": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
+      }
+     },
+     "required": [
+      "formula"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_dose_convert",
+    "description": "漢制劑量換算計算器（確定性）：解析「三兩」「一兩十六銖」「半升」等劑量，返回銖當量與三家折算克數/毫升——避免模型心算錯誤。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "dose": {
+       "type": "string",
+       "description": "如 三兩 / 一兩半 / 半升 / 十二枚"
+      }
+     },
+     "required": [
+      "dose"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_case_search",
+    "description": "醫案檢索：《經方實驗錄》(1937 曹穎甫) 真實診案，按方名或關鍵詞查找；醫案屬旁證（非經文層），結果自動附該方的經文支持條文作錨點。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "formula": {
+       "type": "string",
+       "description": "可選方名"
+      },
+      "keyword": {
+       "type": "string",
+       "description": "可選關鍵詞（症狀/敘述）"
+      },
+      "top_k": {
+       "type": "integer",
+       "default": 3
+      }
+     },
+     "required": []
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_hypotheses",
+    "description": "多假設方證分析（醫師/教學端）：依症狀脈象返回並列候選方證假設，每個假設帶支持證據/反證/缺失關鍵證，並生成鑒別追問；證據不足時建議先補充四診信息而非給單一答案。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "symptoms": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
+      },
+      "pulse": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
+      },
+      "six_channel": {
+       "type": "string"
+      },
+      "top_k": {
+       "type": "integer",
+       "default": 4
+      }
+     },
+     "required": [
+      "symptoms"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_library",
+    "description": "中醫笈成全庫快速查閱（800+ 部醫籍，文獻旁證層/非經文層）：按書名/作者/朝代/分類檢索編目；按原文詞句全文檢索（返回書·章節定位的摘錄）；或按書名+章節閱讀原書。庫未下載時提示 `library fetch`。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "query": {
+       "type": "string",
+       "description": "檢索詞：書名/作者（編目）或原文詞句（全文）"
+      },
+      "book": {
+       "type": "string",
+       "description": "可選書名——直接閱讀該書"
+      },
+      "section": {
+       "type": "string",
+       "description": "可選章節名（配合 book）"
+      },
+      "category": {
+       "type": "string",
+       "description": "可選分類過濾：醫案/方書/本草/溫病/傷寒…"
+      },
+      "top_k": {
+       "type": "integer",
+       "default": 5
+      }
+     },
+     "required": []
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_trace",
+    "description": "深度溯源鏈：條文（原文→異文→注家→歷代引用→計量）、方劑（首見→組成→類方劑量演化→方名傳播）、方證觀點（原文直述檢驗→注家首倡時間線→學派立場）、注家（學派/指紋/被轉引樞紐度）、學派（範式/一致度）、任意文本回源。多觀點並存，證據分級標註。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "query_type": {
+       "type": "string",
+       "enum": [
+        "clause",
+        "formula",
+        "claim",
+        "school",
+        "commentator",
+        "text",
+        "quote",
+        "term",
+        "dispute",
+        "compare"
+       ],
+       "description": "溯源對象類型；quote=誤引檢測；dispute=注家爭議結構化（條文號）；compare=學派/注家比較（A vs B）"
+      },
+      "ref": {
+       "type": "string",
+       "description": "條文號/方名/觀點關鍵詞/注家名/學派名/原文片段"
+      }
+     },
+     "required": [
+      "query_type",
+      "ref"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_citation_network",
+    "description": "學術計量網絡（確定性科學計量）：歷代著作→條文引文邊的引用網絡、被引最多條文、共引條文對、著作文獻耦合、朝代時間切片、突現分析、主路徑。可選 target（條文號或方名）返回該對象的傳播計量；scope 控制被引榜範圍（canonical=正文398條[默認]/auxiliary=輔助篇章/all）。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "target": {
+       "type": "string",
+       "description": "可選：條文號（如 12）或方名（如 桂枝湯）"
+      },
+      "scope": {
+       "type": "string",
+       "enum": [
+        "canonical",
+        "auxiliary",
+        "all"
+       ],
+       "default": "canonical",
+       "description": "被引榜範圍：正文/輔助篇章/混排"
+      },
+      "top_k": {
+       "type": "integer",
+       "default": 8
+      }
+     },
+     "required": []
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_herb_profile",
+    "description": "藥證檔案（藥解）：單味藥的出現方劑、條文、劑量寫法、配伍共現網絡（同方共現計數）。只含可計算事實，不編造藥性/功效解釋。條文與本草摘錄支持 offset/limit 分頁續讀。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "herb": {
+       "type": "string",
+       "description": "藥名，如 桂枝"
+      },
+      "clause_offset": {
+       "type": "integer",
+       "description": "條文分頁起點（默認 0）"
+      },
+      "clause_limit": {
+       "type": "integer",
+       "description": "條文每頁條數（默認 20，上限 100）"
+      },
+      "bencao_offset": {
+       "type": "integer",
+       "description": "本草摘錄分頁起點（默認 0）"
+      },
+      "bencao_limit": {
+       "type": "integer",
+       "description": "本草摘錄每頁部數（默認 4，上限 12）"
+      }
+     },
+     "required": [
+      "herb"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_formula_explain",
+    "description": "方解檔案（一站式）：首見條文、三層症狀口徑（首見方證/全書聚合/特殊上下文）、組成劑量比、煎服法、禁忌、類方鑒別、方名傳播、方證觀點分級。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "formula": {
+       "type": "string",
+       "description": "方名，如 桂枝湯"
+      }
+     },
+     "required": [
+      "formula"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_intake",
+    "description": "四診信息採集：把患者自然敘述整理為結構化四診表（主訴/病程/寒熱/汗/渴飲/二便/胸脅腹/痛/眠/舌/脈/誤治史/藥後反應）+ 缺失關鍵信息 + 追問建議。只整理信息，不做匹配不做診斷（患者端安全）。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "text": {
+       "type": "string",
+       "description": "患者的自然語言敘述"
+      }
+     },
+     "required": [
+      "text"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_adjudicate",
+    "description": "方證多假設裁決（醫師/教學端）：候選方證各附支持證/反證/缺失證/禁忌衝突，輸出三態裁決（傾向A/傾向B/不能裁決）+「為什麼還不能定方」+ 三個關鍵追問。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "symptoms": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
+      },
+      "pulse": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
+      },
+      "six_channel": {
+       "type": "string"
+      }
+     },
+     "required": [
+      "symptoms"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_conflict_audit",
+    "description": "方證衝突審計（醫師端）：候選方 × 呈現表現 → 衝突項（核心證/兼證衝突）/衝突條文/是否禁忌/改判候選/應補問。比 top-k 匹配更安全的定位方式。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "formula": {
+       "type": "string"
+      },
+      "symptoms": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
+      },
+      "pulse": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
+      }
+     },
+     "required": [
+      "formula",
+      "symptoms"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "shanghan_mistreatment_simulate",
+    "description": "誤治傳變路徑模擬：某經 × 某誤治 → 變證分支 → 救逆方 → 條文依據；多步鏈為組合視圖並如實標註（每步錨定原文，鏈非原文連續敘述）。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "channel": {
+       "type": "string",
+       "default": "太陽病"
+      },
+      "mistreatment": {
+       "type": "string",
+       "description": "誤汗/誤下/誤吐/火逆；留空列全部"
+      },
+      "steps": {
+       "type": "integer",
+       "default": 1
+      }
+     },
+     "required": []
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "classics_search_passages",
+    "description": "全量古籍分層檢索（L0 元數據→L1 字符倒排→L2 逐字驗證，逐層可解釋）：布爾 AND/OR/NOT、鄰近窗口、全量命中計數與字符座標；返回 P 層段級證據（verbatim+quote_hash 可重驗）。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "query": {
+       "type": "string",
+       "description": "AND 檢索項（空白分詞）"
+      },
+      "any_terms": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       },
+       "description": "OR 項：至少命中其一"
+      },
+      "not_terms": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       },
+       "description": "排除項"
+      },
+      "near": {
+       "type": "integer",
+       "default": 0,
+       "description": ">0 時前兩個 AND 項須在該字符窗口內共現"
+      },
+      "category": {
+       "type": "string"
+      },
+      "dynasty": {
+       "type": "string"
+      },
+      "author": {
+       "type": "string"
+      },
+      "work": {
+       "type": "string"
+      },
+      "limit": {
+       "type": "integer",
+       "default": 8
+      },
+      "per_book": {
+       "type": "integer",
+       "default": 3
+      },
+      "max_scan": {
+       "type": "integer",
+       "default": 200
+      },
+      "order": {
+       "type": "string",
+       "description": "relevance|dynasty"
+      }
+     },
+     "required": []
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "classics_read_passage",
+    "description": "按 passage_id（或 著作+章節）閱讀全庫某一段：整段扁平化正文 + P 層證據記錄（可重驗）。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "passage_id": {
+       "type": "string"
+      },
+      "work": {
+       "type": "string",
+       "description": "著作名/單元 id"
+      },
+      "section": {
+       "type": "string"
+      },
+      "max_chars": {
+       "type": "integer",
+       "default": 4000
+      }
+     },
+     "required": []
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "classics_compare_witnesses",
+    "description": "同一著作不同傳本（Witness）對照：按書名歸組傳本清單；帶探針詞時返回各傳本命中段對照與兩兩相似度。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "work": {
+       "type": "string"
+      },
+      "query": {
+       "type": "string",
+       "description": "可選探針詞句"
+      },
+      "limit": {
+       "type": "integer",
+       "default": 6
+      }
+     },
+     "required": [
+      "work"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "classics_trace_citation",
+    "description": "引文溯源：全庫時間有序檢索（按朝代排序的逐字命中）+ 反證搜索（截半探針找更早部分匹配候選）。誠實標注：在庫首現≠歷史首現。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "quote": {
+       "type": "string",
+       "description": "≥4 字引文"
+      },
+      "max_scan": {
+       "type": "integer",
+       "default": 300
+      },
+      "top": {
+       "type": "integer",
+       "default": 12
+      }
+     },
+     "required": [
+      "quote"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "classics_resolve_term",
+    "description": "術語解析：異體字折疊形、變體字符、全庫出現概況（分類/朝代分佈）。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "term": {
+       "type": "string"
+      },
+      "max_scan": {
+       "type": "integer",
+       "default": 120
+      }
+     },
+     "required": [
+      "term"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "classics_concept_drift",
+    "description": "概念漂移計量：術語出現按朝代分桶（著作數/命中段數/代表著作），時間有序；掃描封頂如實標注。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "term": {
+       "type": "string"
+      },
+      "category": {
+       "type": "string"
+      },
+      "max_scan": {
+       "type": "integer",
+       "default": 300
+      }
+     },
+     "required": [
+      "term"
+     ]
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "classics_library_stats",
+    "description": "中醫笈成全庫統計：書目數/文本單元數/嵌套深度/分類/朝代分佈/指紋。（傷寒論規則庫統計請用 shanghan_corpus_stats——語義嚴格分離。）",
+    "parameters": {
+     "type": "object",
+     "properties": {}
+    }
+   }
+  },
+  {
+   "type": "function",
+   "function": {
+    "name": "classics_export_evidence_packet",
+    "description": "P 層證據包導出：按 passage_id 物化整段記錄並逐字重驗（verbatim+座標+quote_hash），附庫指紋——供論文與人工複核。",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "passage_ids": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
+      },
+      "topic": {
+       "type": "string"
+      }
+     },
+     "required": [
+      "passage_ids"
+     ]
+    }
+   }
+  }
+ ],
+ "anthropic_tools": [
+  {
+   "name": "shanghan_search",
+   "description": "檢索《傷寒論》原文條文（BM25+結構化過濾+關係擴展）。返回帶 clause_id 的條文命中。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "query": {
+      "type": "string",
+      "description": "症狀/方名/脈象/治法等檢索詞"
+     },
+     "top_k": {
+      "type": "integer",
+      "default": 6
+     },
+     "six_channel": {
+      "type": "string",
+      "description": "可選六經過濾，如 太陽病"
+     },
+     "formula": {
+      "type": "string",
+      "description": "可選方劑過濾"
+     },
+     "expand": {
+      "type": "boolean",
+      "default": false,
+      "description": "關係圖譜擴展"
+     }
+    },
+    "required": [
+     "query"
+    ]
+   }
+  },
+  {
+   "name": "shanghan_get_clause",
+   "description": "按條文號(1-398)或 clause_id 取條文全息：原文、實體標註、初始規則、條文關係。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "ref": {
+      "type": "string",
+      "description": "條文號或 SHL_SONGBEN_xxxx"
+     }
+    },
+    "required": [
+     "ref"
+    ]
+   }
+  },
+  {
+   "name": "shanghan_match_formula",
+   "description": "醫師端方證匹配：依症狀/脈象返回候選方證規則與原文證據（輔助性質，不替代臨床）。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "symptoms": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "pulse": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "six_channel": {
+      "type": "string"
+     },
+     "top_k": {
+      "type": "integer",
+      "default": 5
+     }
+    },
+    "required": [
+     "symptoms"
+    ]
+   }
+  },
+  {
+   "name": "shanghan_differential",
+   "description": "方證鑒別：給定 2-3 個方劑，返回多軸對比表與關鍵鑒別點及條文。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "formulas": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    },
+    "required": [
+     "formulas"
+    ]
+   }
+  },
+  {
+   "name": "shanghan_six_channel",
+   "description": "六經規則：返回某經提綱、總括、亞型、主方、欲解時與禁忌/誤治條文。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "channel": {
+      "type": "string",
+      "description": "太陽病/陽明病/少陽病/太陰病/少陰病/厥陰病"
+     }
+    },
+    "required": [
+     "channel"
+    ]
+   }
+  },
+  {
+   "name": "shanghan_formula_rule",
+   "description": "方證規則：返回某方的核心證/兼證/脈象/組成/加減方/禁忌與支持條文。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "formula": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "formula"
+    ]
+   }
+  },
+  {
+   "name": "shanghan_mistreatment",
+   "description": "誤治傳變圖譜：返回(誤治→變證→救治方→條文)路徑，可按關鍵詞過濾。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "query": {
+      "type": "string",
+      "description": "可選，如 誤下/結胸/火逆"
+     }
+    }
+   }
+  },
+  {
+   "name": "shanghan_list_formulas",
+   "description": "列出規則庫中可用的方劑名稱（用於消歧或選擇）。",
+   "input_schema": {
+    "type": "object",
+    "properties": {}
+   }
+  },
+  {
+   "name": "shanghan_divergence_atlas",
+   "description": "注家分歧圖譜：9 部注本的對齊覆蓋、爭點條文榜、注家一致度矩陣與指紋；可按 clause_id 片段取單條的多注家記錄。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "clause": {
+      "type": "string",
+      "description": "可選 clause_id 片段，如 0012"
+     }
+    }
+   }
+  },
+  {
+   "name": "shanghan_dose",
+   "description": "劑量計量層：某方的銖當量藥量比（學派無關）、三家折算總量與家族劑量演化邊；不給方名則返回全庫劑量摘要。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "formula": {
+      "type": "string",
+      "description": "可選方名，如 桂枝加芍藥湯"
+     }
+    }
+   }
+  },
+  {
+   "name": "shanghan_corpus_stats",
+   "description": "傷寒論規則庫統計（領域統計，**非**笈成全庫統計）：條文/規則/關係/方證頻次/六經分佈等數字（科研引用用）。全庫書目統計請用 classics_library_stats。",
+   "input_schema": {
+    "type": "object",
+    "properties": {}
+   }
+  },
+  {
+   "name": "shanghan_eval_metrics",
+   "description": "客觀評測結果：遮方預測(LOCO)、醫案回放、證據接地率三大基準的當前指標與消融。",
+   "input_schema": {
+    "type": "object",
+    "properties": {}
+   }
+  },
+  {
+   "name": "shanghan_variants",
+   "description": "版本異文（B層）：某條文在桂林古本/千金翼方版的對齊異文與用字差異。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "ref": {
+      "type": "string",
+      "description": "條文號或 clause_id"
+     }
+    },
+    "required": [
+     "ref"
+    ]
+   }
+  },
+  {
+   "name": "shanghan_relations",
+   "description": "條文關係圖譜遍歷：某條文的鄰接邊（同方族/鑒別/誤治傳變/禁忌/傳變/次序），支持按關係類型過濾——用於多跳推理與傳變鏈追蹤。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "ref": {
+      "type": "string",
+      "description": "條文號或 clause_id"
+     },
+     "relation_type": {
+      "type": "string",
+      "description": "可選：same_formula_family/differential/mistreatment_transformation/transmission/contraindication/sequence"
+     }
+    },
+    "required": [
+     "ref"
+    ]
+   }
+  },
+  {
+   "name": "shanghan_therapy",
+   "description": "治法規則：汗/吐/下/和/溫/補/救逆/利水的適應指徵、代表方、禁例與誤施之變。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "method": {
+      "type": "string",
+      "description": "可選，如 汗法/下法/禁汗/誤下；不填返回總覽"
+     }
+    }
+   }
+  },
+  {
+   "name": "shanghan_contraindication_check",
+   "description": "禁忌檢查（複合推理）：給定方劑與病人證候，返回該方原文禁忌、證候與方證的衝突（如無汗 vs 桂枝湯）及相關治法禁例——輔助性質，不替代臨床判斷。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "formula": {
+      "type": "string"
+     },
+     "symptoms": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    },
+    "required": [
+     "formula"
+    ]
+   }
+  },
+  {
+   "name": "shanghan_dose_convert",
+   "description": "漢制劑量換算計算器（確定性）：解析「三兩」「一兩十六銖」「半升」等劑量，返回銖當量與三家折算克數/毫升——避免模型心算錯誤。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "dose": {
+      "type": "string",
+      "description": "如 三兩 / 一兩半 / 半升 / 十二枚"
+     }
+    },
+    "required": [
+     "dose"
+    ]
+   }
+  },
+  {
+   "name": "shanghan_case_search",
+   "description": "醫案檢索：《經方實驗錄》(1937 曹穎甫) 真實診案，按方名或關鍵詞查找；醫案屬旁證（非經文層），結果自動附該方的經文支持條文作錨點。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "formula": {
+      "type": "string",
+      "description": "可選方名"
+     },
+     "keyword": {
+      "type": "string",
+      "description": "可選關鍵詞（症狀/敘述）"
+     },
+     "top_k": {
+      "type": "integer",
+      "default": 3
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "shanghan_hypotheses",
+   "description": "多假設方證分析（醫師/教學端）：依症狀脈象返回並列候選方證假設，每個假設帶支持證據/反證/缺失關鍵證，並生成鑒別追問；證據不足時建議先補充四診信息而非給單一答案。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "symptoms": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "pulse": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "six_channel": {
+      "type": "string"
+     },
+     "top_k": {
+      "type": "integer",
+      "default": 4
+     }
+    },
+    "required": [
+     "symptoms"
+    ]
+   }
+  },
+  {
+   "name": "shanghan_library",
+   "description": "中醫笈成全庫快速查閱（800+ 部醫籍，文獻旁證層/非經文層）：按書名/作者/朝代/分類檢索編目；按原文詞句全文檢索（返回書·章節定位的摘錄）；或按書名+章節閱讀原書。庫未下載時提示 `library fetch`。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "query": {
+      "type": "string",
+      "description": "檢索詞：書名/作者（編目）或原文詞句（全文）"
+     },
+     "book": {
+      "type": "string",
+      "description": "可選書名——直接閱讀該書"
+     },
+     "section": {
+      "type": "string",
+      "description": "可選章節名（配合 book）"
+     },
+     "category": {
+      "type": "string",
+      "description": "可選分類過濾：醫案/方書/本草/溫病/傷寒…"
+     },
+     "top_k": {
+      "type": "integer",
+      "default": 5
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "shanghan_trace",
+   "description": "深度溯源鏈：條文（原文→異文→注家→歷代引用→計量）、方劑（首見→組成→類方劑量演化→方名傳播）、方證觀點（原文直述檢驗→注家首倡時間線→學派立場）、注家（學派/指紋/被轉引樞紐度）、學派（範式/一致度）、任意文本回源。多觀點並存，證據分級標註。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "query_type": {
+      "type": "string",
+      "enum": [
+       "clause",
+       "formula",
+       "claim",
+       "school",
+       "commentator",
+       "text",
+       "quote",
+       "term",
+       "dispute",
+       "compare"
+      ],
+      "description": "溯源對象類型；quote=誤引檢測；dispute=注家爭議結構化（條文號）；compare=學派/注家比較（A vs B）"
+     },
+     "ref": {
+      "type": "string",
+      "description": "條文號/方名/觀點關鍵詞/注家名/學派名/原文片段"
+     }
+    },
+    "required": [
+     "query_type",
+     "ref"
+    ]
+   }
+  },
+  {
+   "name": "shanghan_citation_network",
+   "description": "學術計量網絡（確定性科學計量）：歷代著作→條文引文邊的引用網絡、被引最多條文、共引條文對、著作文獻耦合、朝代時間切片、突現分析、主路徑。可選 target（條文號或方名）返回該對象的傳播計量；scope 控制被引榜範圍（canonical=正文398條[默認]/auxiliary=輔助篇章/all）。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "target": {
+      "type": "string",
+      "description": "可選：條文號（如 12）或方名（如 桂枝湯）"
+     },
+     "scope": {
+      "type": "string",
+      "enum": [
+       "canonical",
+       "auxiliary",
+       "all"
+      ],
+      "default": "canonical",
+      "description": "被引榜範圍：正文/輔助篇章/混排"
+     },
+     "top_k": {
+      "type": "integer",
+      "default": 8
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "shanghan_herb_profile",
+   "description": "藥證檔案（藥解）：單味藥的出現方劑、條文、劑量寫法、配伍共現網絡（同方共現計數）。只含可計算事實，不編造藥性/功效解釋。條文與本草摘錄支持 offset/limit 分頁續讀。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "herb": {
+      "type": "string",
+      "description": "藥名，如 桂枝"
+     },
+     "clause_offset": {
+      "type": "integer",
+      "description": "條文分頁起點（默認 0）"
+     },
+     "clause_limit": {
+      "type": "integer",
+      "description": "條文每頁條數（默認 20，上限 100）"
+     },
+     "bencao_offset": {
+      "type": "integer",
+      "description": "本草摘錄分頁起點（默認 0）"
+     },
+     "bencao_limit": {
+      "type": "integer",
+      "description": "本草摘錄每頁部數（默認 4，上限 12）"
+     }
+    },
+    "required": [
+     "herb"
+    ]
+   }
+  },
+  {
+   "name": "shanghan_formula_explain",
+   "description": "方解檔案（一站式）：首見條文、三層症狀口徑（首見方證/全書聚合/特殊上下文）、組成劑量比、煎服法、禁忌、類方鑒別、方名傳播、方證觀點分級。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "formula": {
+      "type": "string",
+      "description": "方名，如 桂枝湯"
+     }
+    },
+    "required": [
+     "formula"
+    ]
+   }
+  },
+  {
+   "name": "shanghan_intake",
+   "description": "四診信息採集：把患者自然敘述整理為結構化四診表（主訴/病程/寒熱/汗/渴飲/二便/胸脅腹/痛/眠/舌/脈/誤治史/藥後反應）+ 缺失關鍵信息 + 追問建議。只整理信息，不做匹配不做診斷（患者端安全）。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "text": {
+      "type": "string",
+      "description": "患者的自然語言敘述"
+     }
+    },
+    "required": [
+     "text"
+    ]
+   }
+  },
+  {
+   "name": "shanghan_adjudicate",
+   "description": "方證多假設裁決（醫師/教學端）：候選方證各附支持證/反證/缺失證/禁忌衝突，輸出三態裁決（傾向A/傾向B/不能裁決）+「為什麼還不能定方」+ 三個關鍵追問。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "symptoms": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "pulse": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "six_channel": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "symptoms"
+    ]
+   }
+  },
+  {
+   "name": "shanghan_conflict_audit",
+   "description": "方證衝突審計（醫師端）：候選方 × 呈現表現 → 衝突項（核心證/兼證衝突）/衝突條文/是否禁忌/改判候選/應補問。比 top-k 匹配更安全的定位方式。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "formula": {
+      "type": "string"
+     },
+     "symptoms": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "pulse": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    },
+    "required": [
+     "formula",
+     "symptoms"
+    ]
+   }
+  },
+  {
+   "name": "shanghan_mistreatment_simulate",
+   "description": "誤治傳變路徑模擬：某經 × 某誤治 → 變證分支 → 救逆方 → 條文依據；多步鏈為組合視圖並如實標註（每步錨定原文，鏈非原文連續敘述）。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "channel": {
+      "type": "string",
+      "default": "太陽病"
+     },
+     "mistreatment": {
+      "type": "string",
+      "description": "誤汗/誤下/誤吐/火逆；留空列全部"
+     },
+     "steps": {
+      "type": "integer",
+      "default": 1
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "classics_search_passages",
+   "description": "全量古籍分層檢索（L0 元數據→L1 字符倒排→L2 逐字驗證，逐層可解釋）：布爾 AND/OR/NOT、鄰近窗口、全量命中計數與字符座標；返回 P 層段級證據（verbatim+quote_hash 可重驗）。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "query": {
+      "type": "string",
+      "description": "AND 檢索項（空白分詞）"
+     },
+     "any_terms": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "OR 項：至少命中其一"
+     },
+     "not_terms": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "排除項"
+     },
+     "near": {
+      "type": "integer",
+      "default": 0,
+      "description": ">0 時前兩個 AND 項須在該字符窗口內共現"
+     },
+     "category": {
+      "type": "string"
+     },
+     "dynasty": {
+      "type": "string"
+     },
+     "author": {
+      "type": "string"
+     },
+     "work": {
+      "type": "string"
+     },
+     "limit": {
+      "type": "integer",
+      "default": 8
+     },
+     "per_book": {
+      "type": "integer",
+      "default": 3
+     },
+     "max_scan": {
+      "type": "integer",
+      "default": 200
+     },
+     "order": {
+      "type": "string",
+      "description": "relevance|dynasty"
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "classics_read_passage",
+   "description": "按 passage_id（或 著作+章節）閱讀全庫某一段：整段扁平化正文 + P 層證據記錄（可重驗）。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "passage_id": {
+      "type": "string"
+     },
+     "work": {
+      "type": "string",
+      "description": "著作名/單元 id"
+     },
+     "section": {
+      "type": "string"
+     },
+     "max_chars": {
+      "type": "integer",
+      "default": 4000
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "classics_compare_witnesses",
+   "description": "同一著作不同傳本（Witness）對照：按書名歸組傳本清單；帶探針詞時返回各傳本命中段對照與兩兩相似度。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "work": {
+      "type": "string"
+     },
+     "query": {
+      "type": "string",
+      "description": "可選探針詞句"
+     },
+     "limit": {
+      "type": "integer",
+      "default": 6
+     }
+    },
+    "required": [
+     "work"
+    ]
+   }
+  },
+  {
+   "name": "classics_trace_citation",
+   "description": "引文溯源：全庫時間有序檢索（按朝代排序的逐字命中）+ 反證搜索（截半探針找更早部分匹配候選）。誠實標注：在庫首現≠歷史首現。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "quote": {
+      "type": "string",
+      "description": "≥4 字引文"
+     },
+     "max_scan": {
+      "type": "integer",
+      "default": 300
+     },
+     "top": {
+      "type": "integer",
+      "default": 12
+     }
+    },
+    "required": [
+     "quote"
+    ]
+   }
+  },
+  {
+   "name": "classics_resolve_term",
+   "description": "術語解析：異體字折疊形、變體字符、全庫出現概況（分類/朝代分佈）。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "term": {
+      "type": "string"
+     },
+     "max_scan": {
+      "type": "integer",
+      "default": 120
+     }
+    },
+    "required": [
+     "term"
+    ]
+   }
+  },
+  {
+   "name": "classics_concept_drift",
+   "description": "概念漂移計量：術語出現按朝代分桶（著作數/命中段數/代表著作），時間有序；掃描封頂如實標注。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "term": {
+      "type": "string"
+     },
+     "category": {
+      "type": "string"
+     },
+     "max_scan": {
+      "type": "integer",
+      "default": 300
+     }
+    },
+    "required": [
+     "term"
+    ]
+   }
+  },
+  {
+   "name": "classics_library_stats",
+   "description": "中醫笈成全庫統計：書目數/文本單元數/嵌套深度/分類/朝代分佈/指紋。（傷寒論規則庫統計請用 shanghan_corpus_stats——語義嚴格分離。）",
+   "input_schema": {
+    "type": "object",
+    "properties": {}
+   }
+  },
+  {
+   "name": "classics_export_evidence_packet",
+   "description": "P 層證據包導出：按 passage_id 物化整段記錄並逐字重驗（verbatim+座標+quote_hash），附庫指紋——供論文與人工複核。",
+   "input_schema": {
+    "type": "object",
+    "properties": {
+     "passage_ids": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "topic": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "passage_ids"
+    ]
+   }
+  }
+ ],
+ "contracts": [
+  {
+   "name": "classics_compare_witnesses",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "P",
+   "limitations": [
+    "傳本歸組按折疊書名，同名異書需人工消歧"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "6932484e94bcbb80",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "classics_concept_drift",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "P",
+   "limitations": [
+    "頻次漂移≠語義漂移；計數受 per_book/max_scan 封頂"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "f384e6e658eecb0b",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "classics_export_evidence_packet",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "P",
+   "limitations": [],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "0db3730236d4d9e4",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "classics_library_stats",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "P",
+   "limitations": [
+    "統計對象是笈成全庫書目，非傷寒論規則庫"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "9e2fcd061b033258",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "classics_read_passage",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "P",
+   "limitations": [],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "9729364a8bc70c82",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "classics_resolve_term",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "P",
+   "limitations": [
+    "僅異體折疊與出現概況；通假/古今詞/同義映射屬規劃層"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "c6f5ca963dc42d0c",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "classics_search_passages",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "P",
+   "limitations": [
+    "文獻旁證層：可回源重驗，不進入 A 層經文閘門；scan_capped 時零命中≠全庫不存在"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "bb2705855e45e040",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "classics_trace_citation",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "P",
+   "limitations": [
+    "在庫首現≠歷史首現；反證搜索的部分匹配候選需人工核驗"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "0f41c270acd415a3",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_adjudicate",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "D",
+   "limitations": [
+    "三態裁決為確定性規則（評分差距+反證+禁忌），核心是說明「為什麼還不能定方」；不替代臨床判斷"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "cabff15ab52ef947",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_case_search",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "旁證",
+   "limitations": [],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "a23517cb6f507362",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_citation_network",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "D",
+   "limitations": [
+    "計量指標由逐字引文邊確定性推導；語料最晚傳播層為民國，現代引用需經 modern 接口導入"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "d2cdd596c9680e3e",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_conflict_audit",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "D",
+   "limitations": [
+    "衝突判定基於互斥證對與方證規則，條文可回源；改判候選僅為定位提示，不構成處方建議"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "39cd777ebfdbb2d1",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_contraindication_check",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "D",
+   "limitations": [],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "157363a01059cb68",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_corpus_stats",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "D",
+   "limitations": [],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "9e2fcd061b033258",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_differential",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "D",
+   "limitations": [
+    "鑒別軸為跨條歸納（D層），關鍵鑒別點須回源 supporting_clauses"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "1f760b3b2e61eb15",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_divergence_atlas",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "C",
+   "limitations": [],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "258453fab8e56d6c",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_dose",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "A",
+   "limitations": [
+    "藥量比為銖當量原文換算；折算克數依三家學派假設"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "56e52f82ffd2a0fd",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_dose_convert",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "A",
+   "limitations": [],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "afb2c7c04deffe0b",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_eval_metrics",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "D",
+   "limitations": [],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "9e2fcd061b033258",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_formula_explain",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "mixed",
+   "limitations": [
+    "一站式檔案混合 A/C/D 層與引文邊，逐節層級見 section_evidence_levels；四層症狀口徑見 symptom_layers.note"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "c62a46adef1ac0a6",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_formula_rule",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "D",
+   "limitations": [
+    "方證規則為跨條歸納，組成/服法屬 A 層原文"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "c81aacce1c240819",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_get_clause",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "A",
+   "limitations": [],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "c64c8e1bb683c72e",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_herb_profile",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "A-derived",
+   "limitations": [
+    "原始事實取自 A 層（組成/條文/劑量寫法），配伍共現與頻次排序屬確定性派生統計，非原文直述；藥性功效解釋屬本草層未隨庫，不編造"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "b7bf324609853829",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_hypotheses",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "D",
+   "limitations": [
+    "多假設分析為規則歸納（D層），置信度為啟發式評分；不替代臨床判斷"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "f4962d2a1cb1fcda",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_intake",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "D",
+   "limitations": [
+    "僅為就診信息整理（確定性詞表抽取），不構成診斷；現代口語映射表透明可審"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "b189c3c08017d213",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_library",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "旁證",
+   "limitations": [],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "47048e9f5f5472c2",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_list_formulas",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "A",
+   "limitations": [],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "9e2fcd061b033258",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_match_formula",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "D",
+   "limitations": [
+    "匹配分數為規則歸納（D層），證據錨定 A 層條文；不替代臨床判斷"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "448162c3a80fe849",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_mistreatment",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "D",
+   "limitations": [],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "9f1003a97937d7e8",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_mistreatment_simulate",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "D",
+   "limitations": [
+    "單步路徑逐條錨定原文；多步鏈為組合視圖（假設路徑），非原文連續敘述"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "f59df6f9139e7c96",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_relations",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "D",
+   "limitations": [],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "b29287def05835f9",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_search",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "A",
+   "limitations": [],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "4c239f1d883d189f",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_six_channel",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "D",
+   "limitations": [
+    "篇章級歸納，提綱原文屬 A 層"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "e2a3c05c21ab844f",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_therapy",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "D",
+   "limitations": [],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "8013db8150672e5e",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_trace",
+   "version": "1.2.0",
+   "permission_level": "doctor_researcher",
+   "evidence_level": "mixed",
+   "limitations": [
+    "溯源鏈混合 A 原文/B 異文/C 注家/D 歸納/引文邊/計量，整體標 mixed，逐節層級見 section_evidence_levels；學派歸屬與方證觀點命題屬後世歸納（posthoc_induction）"
+   ],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "9a4a77f6e42d31ad",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  },
+  {
+   "name": "shanghan_variants",
+   "version": "1.2.0",
+   "permission_level": "patient_safe",
+   "evidence_level": "B",
+   "limitations": [],
+   "side_effect": "read",
+   "timeout_s": 30,
+   "cacheable": true,
+   "idempotent": true,
+   "max_result_bytes": 262144,
+   "error_schema": {
+    "error": "string",
+    "hint": "string?"
+   },
+   "schema_hash": "29a1aef1c8826a2f",
+   "enforced": {
+    "args_schema": "runtime（_validate_args：必填/未知參數/類型）",
+    "timeout_s": "runtime（工作線程 + join(timeout)；超時回錯誤信封，守護線程結果丟棄；HERMES_TOOL_TIMEOUT=0 關閉）",
+    "max_result_bytes": "runtime（超限報錯不靜默截斷）",
+    "output_shape": "runtime（非 dict 輸出視為契約違例）",
+    "cacheable": "runtime（緩存鍵含 tools_version+語料指紋）",
+    "side_effect_read": "by-construction（工具函數無寫路徑；非運行時攔截，見 tests 只讀不變式）",
+    "idempotent": "by-construction（只讀派生，重試安全）",
+    "audit": "runtime（環形審計日誌 audit_tail()；harness 下另有 span 級軌跡）"
+   }
+  }
+ ],
+ "invocation": {
+  "cli": "python3 -m hermes_shanghan tool-call <name> --args '<json>'",
+  "mcp": "python3 -m hermes_shanghan serve-mcp"
+ },
+ "safety": "患者語境禁止診斷/處方/劑量；所有結論回源條文編號。"
+}

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>傷寒論 · Hermes 控制台</title>
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="seal">傷</div>
+      <div class="brand-text">
+        <h1>傷寒論 · Hermes</h1>
+        <span class="subtitle">自主規則挖掘 · 證據回源 · 多智能體 控制台</span>
+      </div>
+    </div>
+    <div class="topbar-meta">
+      <select id="lang-select" class="badge" title="界面語言 / Language">
+        <option value="zh-Hant">繁體</option>
+        <option value="zh-Hans">简体</option>
+        <option value="en">EN</option>
+      </select>
+      <span class="badge backend" id="backend-badge" title="LLM 後端">後端…</span>
+      <span class="badge stat" id="rules-badge">規則…</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar" id="nav">
+      <button data-view="dashboard" class="active"><i>◰</i><span>總覽</span></button>
+      <button data-view="agent"><i>✦</i><span>智能體</span></button>
+      <button data-view="search"><i>⌕</i><span>原文檢索</span></button>
+      <button data-view="match"><i>⚕</i><span>方證匹配</span></button>
+      <button data-view="differential"><i>⇄</i><span>方證鑒別</span></button>
+      <button data-view="teach"><i>☰</i><span>六經教學</span></button>
+      <button data-view="mistreatment"><i>⚡</i><span>誤治傳變</span></button>
+      <button data-view="research"><i>⊹</i><span>科研挖掘</span></button>
+      <button data-view="trace"><i>⌘</i><span>溯源工作台</span></button>
+      <button data-view="herbs"><i>本</i><span>方藥檔案</span></button>
+      <button data-view="bianzheng"><i>診</i><span>辨證閉環</span></button>
+      <button data-view="tools"><i>⚒</i><span>工具台</span></button>
+      <button data-view="paper"><i>✎</i><span>論文生成</span></button>
+      <button data-view="skills"><i>◳</i><span>Skill 庫</span></button>
+      <button data-view="about"><i>ⓘ</i><span>接入/關於</span></button>
+      <button onclick="location.href='/console.html'"><i>▦</i><span>運行中心（新）</span></button>
+      <button onclick="location.href='/static/classics.html'"><i>◫</i><span>全量古籍工作台</span></button>
+    </nav>
+
+    <main id="main"><div class="loading">載入中…</div></main>
+  </div>
+
+  <footer class="footbar">
+    研發：<b>醫哲未來人工智能研究院</b>（YiZhe Future AI Research Institute）
+    · Hermes-Shanghanlun · 無證據鏈，不成回答
+  </footer>
+
+  <aside class="drawer" id="drawer">
+    <div class="drawer-head">
+      <button id="drawer-back" style="display:none" title="返回上一條">←</button>
+      <span id="drawer-title">條文</span>
+      <span class="drawer-head-btns">
+        <button id="drawer-bottom" title="跳到最下方：AI 解讀與對話">⤓</button>
+        <button id="drawer-close" title="關閉">✕</button>
+      </span>
+    </div>
+    <div class="drawer-body" id="drawer-body"></div>
+  </aside>
+  <div class="drawer-scrim" id="drawer-scrim"></div>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>
