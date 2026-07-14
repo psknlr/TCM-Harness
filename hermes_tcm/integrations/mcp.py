@@ -44,6 +44,8 @@ RESOURCE_TEMPLATES = [
      "name": "傳本記錄", "mimeType": "application/json"},
     {"uriTemplate": "tcm://passages/{passage_id}",
      "name": "段落全文與證據記錄", "mimeType": "application/json"},
+    {"uriTemplate": "tcm://canvases/{canvas_id}",
+     "name": "頁面畫布（IIIF Canvas）", "mimeType": "application/json"},
     {"uriTemplate": "tcm://evidence/{evidence_id}",
      "name": "證據記錄（EvidenceRecord V2）", "mimeType": "application/json"},
     {"uriTemplate": "tcm://packets/{packet_id}",
@@ -133,6 +135,28 @@ class ResourceResolver:
                 "text": p.flat_text,
                 "evidence": passage_evidence(p, unit, 0, len(p.flat_text),
                                              retrieval_query="resource")}
+
+    def _read_canvases(self, canvas_id: str) -> Dict:
+        """IIIF Canvas 資源。誠實邊界：當前庫是純轉錄文本、無影印頁
+        對齊——canvas 以段落為單位生成轉錄畫布（無圖像層），影像
+        canvas 待掃描件對齊後補齊，不編造。canvas_id 約定 = passage_id。"""
+        from ..tools._shared import searcher
+        s = searcher()
+        if s is None:
+            return {"error": "corpus_unavailable"}
+        p = s.index.get(canvas_id)
+        if p is None:
+            return {"error": f"未找到畫布 {canvas_id}（canvas_id 約定為 "
+                             "passage_id；影像 canvas 需掃描件對齊）"}
+        from ..corpus.iiif import Canvas, transcription_annotation
+        cid = f"tcm://canvases/{canvas_id}"
+        canvas = Canvas(canvas_id=cid,
+                        label=f"{p.section or p.file}#{p.seq}",
+                        annotations=[transcription_annotation(
+                            cid, p.flat_text[:2000])])
+        return {"uri": cid, "canvas": canvas.to_dict(),
+                "alignment_status": "transcription_only",
+                "note": "無影像層（純轉錄庫）；圖像 canvas 待影印對齊"}
 
     def _read_evidence(self, evidence_id: str) -> Dict:
         if self.ledger is None:

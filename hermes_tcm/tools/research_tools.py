@@ -79,6 +79,39 @@ def t_export_jsonld(bundle: Dict) -> Dict:
                        "@graph": graph}}
 
 
+def t_export_tei(bundle: Dict) -> Dict:
+    """研究束 → TEI 文檔：每條證據一個 quote 段（帶 witness 出處），
+    主張為 interpGrp。純標準庫 XML 生成。"""
+    from xml.sax.saxutils import escape, quoteattr
+    b = bundle or {}
+    parts = ['<?xml version="1.0" encoding="UTF-8"?>',
+             '<TEI xmlns="http://www.tei-c.org/ns/1.0">',
+             "  <teiHeader><fileDesc><titleStmt>",
+             f"    <title>{escape(b.get('title', '（無題）'))}</title>",
+             "  </titleStmt><sourceDesc><p>Hermes-TCM research bundle "
+             f"{escape(b.get('bundle_id', ''))}</p></sourceDesc>"
+             "</fileDesc></teiHeader>",
+             "  <text><body>",
+             '    <div type="claims"><interpGrp>']
+    for c in b.get("claims", []):
+        parts.append(
+            f"      <interp xml:id={quoteattr(c.get('claim_id', 'clm'))}"
+            f" ana={quoteattr('#' + c.get('status', 'draft'))}>"
+            f"{escape(c.get('claim_text') or c.get('text', ''))}</interp>")
+    parts.append("    </interpGrp></div>")
+    parts.append('    <div type="evidence">')
+    for e in b.get("evidence", []):
+        source = f"《{e.get('work_title', '')}》{e.get('section', '')}"
+        parts.append(
+            f"      <cit xml:id={quoteattr(e.get('evidence_id', 'ev'))}>"
+            f"<quote>{escape(e.get('verbatim', ''))}</quote>"
+            f"<bibl corresp={quoteattr(e.get('witness_id', ''))}>"
+            f"{escape(source)}</bibl></cit>")
+    parts += ["    </div>", "  </body></text>", "</TEI>"]
+    return {"tool": "research.export_tei", "available": True,
+            "tei_xml": "\n".join(parts)}
+
+
 def t_export_bibtex(bundle: Dict) -> Dict:
     b = bundle or {}
     entries = []
@@ -129,6 +162,15 @@ def register(reg) -> None:
             "bundle": {"type": "object"}}, "required": ["bundle"]},
         func=t_export_jsonld,
         use_when=["知識圖譜/語義網導出"], evidence_contract=meta_ec,
+        failure_modes=[]))
+    reg.add(ToolContractV2(
+        name="research.export_tei",
+        description="研究束 → TEI 文檔（claims=interpGrp，evidence=cit/"
+                    "quote/bibl，帶 witness 出處）。",
+        input_schema={"type": "object", "properties": {
+            "bundle": {"type": "object"}}, "required": ["bundle"]},
+        func=t_export_tei,
+        use_when=["向 TEI 生態導出研究成果"], evidence_contract=meta_ec,
         failure_modes=[]))
     reg.add(ToolContractV2(
         name="research.export_bibtex",

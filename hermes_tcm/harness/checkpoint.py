@@ -324,3 +324,35 @@ class RunStore:
                 "SELECT payload_json FROM approval_requests WHERE run_id=?",
                 (run_id,)).fetchall()
         return [json.loads(r[0]) for r in rows]
+
+    # ------------------------------------------------------------------
+    # dead-letter queue（Protocol §10.3）：重試耗盡的失敗節點
+    # ------------------------------------------------------------------
+    def dead_letters(self, run_id: str = "") -> List[Dict]:
+        """失敗節點清單（最後一次嘗試 status=failed 的節點）。"""
+        sql = ("SELECT run_id, node_id, MAX(attempt), status, error,"
+               " ended_at FROM node_attempts"
+               + (" WHERE run_id=?" if run_id else "")
+               + " GROUP BY run_id, node_id")
+        with self._lock:
+            rows = self._conn.execute(
+                sql, (run_id,) if run_id else ()).fetchall()
+        return [{"run_id": r[0], "node_id": r[1], "attempts": r[2],
+                 "error": r[4], "at": r[5]}
+                for r in rows if r[3] == "failed"]
+
+    def requeue_node(self, run_id: str, node_id: str) -> bool:
+        """DLQ 重投：清除該節點狀態，下次 execute 重跑（CAS 寫入）。
+        終態 run 不可重投（先走 resume 語義）。"""
+        row = self.load(run_id)
+        if row is None or row["status"] in ("completed", "blocked",
+                                            "rejected", "cancelled"):
+            return False
+        state = row["state"]
+        removed = state.get("nodes", {}).pop(node_id, None)
+        state.get("node_outputs", {}).pop(node_id, None)
+        if removed is None:
+            return False
+        self.save_state(run_id, "queued", state, row["state_version"])
+        self.append_event(run_id, "node_requeued", {"node": node_id})
+        return True

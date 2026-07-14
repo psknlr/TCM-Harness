@@ -74,6 +74,40 @@ def t_read_section(work: str, section: str = "", max_chars: int = 6000) -> Dict:
             "tool": "text.read_section"}
 
 
+def t_get_page_alignment(passage_id: str) -> Dict:
+    """段落的頁面對齊信息（IIIF locator + 規範化映射）。
+
+    誠實邊界：當前庫是純轉錄文本，無影印頁掃描件——頁碼/葉碼/canvas/
+    xywh 如實留空，不編造。字符級座標與 1:1 規範化映射真實可用。"""
+    s = searcher()
+    if s is None:
+        return unavailable("text.get_page_alignment")
+    p = s.index.get(passage_id)
+    if p is None:
+        return {"error": f"未找到段落 {passage_id}"}
+    unit = s.lib._by_id[p.work_id]
+    from ..corpus.iiif import PassageLocator
+    from ..corpus.normalization import three_layer_view
+    view = three_layer_view(p.flat_text)
+    locator = PassageLocator(section=p.section, char_start=0,
+                             char_end=len(p.flat_text))
+    return {"tool": "text.get_page_alignment", "available": True,
+            "passage_id": passage_id,
+            "work": {k: unit[k] for k in ("id", "title", "author",
+                                          "dynasty", "category")},
+            "locator": locator.to_dict(),
+            "alignment_status": "transcription_only",
+            "image_alignment": {"iiif_canvas": "", "xywh": "",
+                                "folio": "", "page": None,
+                                "note": "影印頁對齊需底本掃描件——未對齊"
+                                        "字段如實留空，不編造頁碼"},
+            "normalization": {
+                "map_id": view["normalization_map_id"],
+                "version": view["normalization_version"],
+                "raw_sha256": view["raw_sha256"],
+                "note": "1:1 折疊映射：規範化座標與轉錄座標恆等"}}
+
+
 def register(reg) -> None:
     text_ec = EvidenceContract(
         returns_primary_text=True,
@@ -144,3 +178,19 @@ def register(reg) -> None:
         use_when=["需要整節連續閱讀（如某卷某病篇）"],
         evidence_contract=read_ec,
         failure_modes=["corpus_unavailable", "section_not_found"]))
+    meta_ec = EvidenceContract(returns_primary_text=False,
+                               evidence_role="metadata_only",
+                               minimum_locator=["work_id", "passage_id"])
+    reg.add(ToolContractV2(
+        name="text.get_page_alignment",
+        description="段落的頁面對齊信息：字符座標 + 規範化映射 + IIIF "
+                    "locator。純轉錄庫的影像字段如實留空（不編造頁碼）。",
+        input_schema={"type": "object", "properties": {
+            "passage_id": {"type": "string"}},
+            "required": ["passage_id"]},
+        func=t_get_page_alignment,
+        use_when=["需要段落的定位/座標/規範化映射元數據"],
+        do_not_use_when=["需要段落正文（用 text.read_passage）"],
+        evidence_contract=meta_ec,
+        failure_modes=["corpus_unavailable", "passage_not_found",
+                       "no_image_alignment"]))

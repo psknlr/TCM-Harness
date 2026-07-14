@@ -79,8 +79,10 @@ class TestMCPIntegration(TCMFixtureCase):
         self.assertTrue(m["instructions"])
         names = {t["name"] for t in m["tools"]}
         self.assertIn("citation__trace_quote", names)
-        self.assertTrue(all(t["annotations"]["readOnlyHint"]
-                            for t in m["tools"]))
+        # readOnlyHint 如實：唯一寫工具是私人批注（annotate+審批）
+        not_read_only = {t["name"] for t in m["tools"]
+                         if not t["annotations"]["readOnlyHint"]}
+        self.assertEqual(not_read_only, {"annotation__create_private"})
 
 
 class TestSkills(unittest.TestCase):

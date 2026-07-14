@@ -591,24 +591,9 @@ class ResearchRunController:
         return {"draft_answer": "。".join(lines) + "。"}
 
     def _n_citation_bind(self, ctx: "_RunContext") -> Dict:
+        from ..claims.binder import bind_citations
         draft = ctx.outputs["synthesis"]["draft_answer"]
-        citations: List[Dict] = []
-        for c in ctx.claims:
-            if c.status == "failed":
-                continue
-            for eid in c.supporting_evidence:
-                rec = ctx.ledger.get(eid)
-                if rec is not None:
-                    citations.append({"claim_id": c.claim_id,
-                                      **evidence_entry(rec.to_dict())})
-        # 綁定標記：主張後附〔ev_...〕（沿襲〔psg_...〕的可點擊約定）
-        bound = draft
-        for c in ctx.claims:
-            if c.status == "failed" or not c.supporting_evidence:
-                continue
-            tag = "〔" + "、".join(c.supporting_evidence[:3]) + "〕"
-            if c.claim_text in bound:
-                bound = bound.replace(c.claim_text, c.claim_text + tag, 1)
+        bound, citations = bind_citations(draft, ctx.claims, ctx.ledger)
         return {"bound_answer": bound, "citations": citations}
 
     def _n_safety_and_policy(self, ctx: "_RunContext") -> Dict:

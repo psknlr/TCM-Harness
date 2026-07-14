@@ -39,4 +39,4 @@ include = ["hermes_shanghan*", "hermes_tcm*"]
 
 [tool.setuptools.package-data]
 # Skills 隨包分發（SKILL.md 是 progressive-disclosure 的加載對象）
-hermes_tcm = ["skills/*/SKILL.md"]
+hermes_tcm = ["skills/*/SKILL.md", "skills/*/references/*.md"]

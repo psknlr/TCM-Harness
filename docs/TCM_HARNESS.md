@@ -96,8 +96,8 @@ intake → task_classify → scope_contract → plan_compile
 
 ## 五、工具面與 MCP（Protocol §9，P0-7/10）
 
-* 12 個命名空間、36 個工具（catalog/text/collation/citation/concept/
-  formula/herb/case/evidence/claim/research/domain），
+* 13 個命名空間、46 個工具（catalog/text/collation/citation/concept/
+  formula/herb/case/graph/evidence/claim/research/annotation），
   `ToolNamespaceRegistry.discover()` 按需取定義（不平鋪）。
 * **ToolContractV2**：use_when / do_not_use_when / side_effect /
   approval / evidence_contract / failure_modes；非只讀工具必須聲明
@@ -141,7 +141,36 @@ intake → task_classify → scope_contract → plan_compile
   分層因素 + Cohen's κ。
 * 八項 P0 硬門檻（`evals/p0_gates.py`）：任何一項不過即不可發布。
 
-## 九、測試
+## 九、服務、SDK 與保存層
 
-`tests/test_tcm_*.py` 157 項（fixture 微型全庫含同名異書、多傳本、
-跨朝代術語鏈、注入文本書），全部離線確定性。全倉 667 項。
+* **HTTP 服務**（`server.py`）：/readyz、/api/tcm/tools（按需
+  discover）、/api/tcm/resource（tcm://）、/api/tcm/research（返回
+  AnswerEnvelope，禁止裸文本）、/api/tcm/tool、/api/tcm/resume。
+  非法角色收斂 public、非法目的收斂 patient_education（fail-closed
+  不提權）；Bearer 鑒權 + 256KB 體積上限。
+* **Python SDK**（`integrations/sdk.py`）：TCMClient——research/
+  call_tool/read_resource/resume 與 HTTP/MCP 同一語義（Phase 3
+  退出條件）。規格導出（`integrations/specs.py`）：OpenAI/Anthropic/
+  MCP 三格式同源 + 內容指紋。
+* **OCFL 保存層**（`corpus/preservation.py`）：NAMASTE + inventory
+  （sha256 manifest + sidecar）+ 版本目錄；內容尋址去重、RAW 永不
+  覆蓋、fixity 重驗、路徑穿越拒絕——接入流水線 05 raw_object_freeze
+  的存儲後端。
+* **檢索平面**（`retrieval/`）：exact（就緒，委托三層內核）/
+  lexical（就緒，確定性 bigram 重排）/ fusion（就緒，RRF）/
+  semantic、graph（規劃層，顯式 not_implemented 不冒充）。
+* **OTel 導出**（`harness/otel.py`）：run 事件溯源 → OTLP JSON
+  resourceSpans（確定性 trace/span id，可重放）。**DLQ**
+  （`checkpoint.dead_letters/requeue_node`）：重試耗盡節點的
+  死信清單與 CAS 重投。
+* **批注層**（`tools/annotation_tools.py`）：W3C Web Annotation
+  Body—Target 私人批注；唯一寫工具（annotate + prompt 審批），
+  批注目標必須是庫中真實段落。
+* **種子金標準**（`evals/seed_goldset.py`）：五類 P0 樣本
+  （首見/異文/轉引/同名異書/OCR 噪聲）針對 fixture 微型庫，
+  CI 離線可評；真實全庫按同 schema 由標註閉環擴充。
+
+## 十、測試
+
+`tests/test_tcm_*.py` 189 項（fixture 微型全庫含同名異書、多傳本、
+跨朝代術語鏈、注入文本書），全部離線確定性。全倉 699 項。

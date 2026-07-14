@@ -23,10 +23,12 @@ _NAMESPACE_SUMMARY = {
     "concept": "術語與概念：異體解析/概念漂移計量",
     "formula": "方劑：解析/源流/組成與劑量比較",
     "herb": "藥物：名實解析/藥性檔案",
-    "case": "醫案：檢索/診療片段抽取",
+    "case": "醫案：檢索/診療片段抽取/呈現譜對比",
+    "graph": "圖譜：引文傳播網絡/條文關係圖投影",
     "evidence": "證據包：構建/重驗",
     "claim": "主張：編譯/核驗/反證義務",
     "research": "研究導出：bundle/markdown/jsonld/tei/bibtex",
+    "annotation": "批注：私人批注（Web Annotation Body—Target，寫入需審批）",
     "domain": "領域插件投影（domain.shanghan.* 等）",
     "admin": "管理操作（寫入類，逐級審批）",
 }
@@ -116,9 +118,10 @@ def get_tcm_registry() -> ToolNamespaceRegistry:
     with _REGISTRY_LOCK:
         if _REGISTRY is None:
             reg = ToolNamespaceRegistry()
-            from . import (catalog_tools, citation_tools, collation_tools,
-                           concept_tools, evidence_tools, research_tools,
-                           text_tools, domain_tools)
+            from . import (annotation_tools, catalog_tools, citation_tools,
+                           collation_tools, concept_tools, domain_tools,
+                           evidence_tools, graph_tools, research_tools,
+                           text_tools)
             catalog_tools.register(reg)
             text_tools.register(reg)
             collation_tools.register(reg)
@@ -127,6 +130,8 @@ def get_tcm_registry() -> ToolNamespaceRegistry:
             evidence_tools.register(reg)
             research_tools.register(reg)
             domain_tools.register(reg)
+            graph_tools.register(reg)
+            annotation_tools.register(reg)
             _REGISTRY = reg
         return _REGISTRY
 

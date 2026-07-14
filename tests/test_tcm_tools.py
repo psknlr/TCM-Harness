@@ -71,10 +71,17 @@ class TestRegistryDiscovery(unittest.TestCase):
         self.assertTrue(any(h["name"].startswith("citation.")
                             for h in hits))
 
-    def test_all_tools_read_only(self):
+    def test_write_tools_all_declare_approval(self):
+        """檢索/研究面全部只讀；唯一寫工具（私人批注）必須聲明審批
+        （Protocol §14.4：默認只讀，寫入需要審批）。"""
+        write_tools = {}
         for name in self.reg.names():
-            self.assertEqual(self.reg.get(name).side_effect, "read_only",
-                             name)
+            c = self.reg.get(name)
+            if c.side_effect != "read_only":
+                write_tools[name] = (c.side_effect, c.approval)
+        self.assertEqual(write_tools,
+                         {"annotation.create_private":
+                          ("annotate", "prompt")})
 
 
 class TestLegacyAdapters(unittest.TestCase):
