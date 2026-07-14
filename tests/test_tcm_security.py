@@ -222,6 +222,11 @@ class TestApprovalOverride(unittest.TestCase):
                 env2 = row2["state"]["envelope"]
                 self.assertNotIn(env2["release"]["decision"],
                                  ("pass", "pass_after_human_review"))
+                # 無參數 resume 連打三次也不得繞過暫停（裁定節點
+                # always_rerun：狀態由當前 approved 集合重新推導）
+                for _ in range(3):
+                    row3 = ctrl.resume(spec.run_id)
+                self.assertEqual(row3["status"], "paused")
                 store.close()
             finally:
                 config.LIBRARY_DIR = saved

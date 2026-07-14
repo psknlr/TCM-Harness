@@ -39,6 +39,10 @@ class NodeContract:
     idempotency_key_fields: List[str] = field(default_factory=list)
     release_condition: str = ""
     cancellation_boundary: bool = True    # 節點邊界可取消
+    # 每次執行都重跑（裁定類節點）：paused-at-release 的 run 被無參數
+    # resume 時，若跳過已 ok 的 release 節點，for-else 會把狀態翻成
+    # completed——繞過人工審核。裁定必須基於當前 approved 集合重新推導。
+    always_rerun: bool = False
 
     def __post_init__(self):
         if self.node_type not in NODE_TYPES:
@@ -153,13 +157,15 @@ RESEARCH_GRAPH: List[NodeContract] = [
         dependencies=["safety_and_policy"],
         input_schema=["claim_ids", "safety_report"],
         output_schema=["review_queue"],
-        release_condition="needs_review 主張生成審批請求"),
+        release_condition="needs_review 主張生成審批請求",
+        always_rerun=True),
     NodeContract(
         node_id="release", node_type="release",
         dependencies=["human_review"],
         input_schema=["bound_answer", "claim_ids", "review_queue"],
         output_schema=["envelope", "decision"],
-        release_condition="五態裁定；blocked/failed_closed 不可人工放行"),
+        release_condition="五態裁定；blocked/failed_closed 不可人工放行",
+        always_rerun=True),
 ]
 
 

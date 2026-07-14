@@ -172,7 +172,8 @@ class ResearchRunController:
 
         for node in self.graph:
             node_state = state["nodes"].get(node.node_id, {})
-            if node_state.get("status") in ("ok", "skipped_by_triage"):
+            if node_state.get("status") in ("ok", "skipped_by_triage") \
+                    and not node.always_rerun:
                 continue
             deps_ok = all(
                 state["nodes"].get(d, {}).get("status")
