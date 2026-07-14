@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hermes-shanghan"
+dynamic = ["version"]
+description = "Hermes-Shanghanlun: autonomous rule mining and skill generation system for Shanghan Lun (Treatise on Cold Damage)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Shanghan-Hermes contributors" }]
+keywords = ["TCM", "Shanghan Lun", "knowledge mining", "classical Chinese medicine", "agents", "litellm", "mcp"]
+
+# Core has ZERO runtime dependencies and works fully offline (local backend).
+dependencies = []
+
+# ── 數據部署（九輪 P0-7：假健康防護）─────────────────────────────────
+# 本 wheel **只含代碼不含語料/規則資產**（data/ ~29MB 不隨包分發）。
+# 獨立安裝後系統不會靜默空運行：ToolRegistry 構建前有 assert_ready 響亮
+# 攔截，服務端提供 /livez 與 /readyz 分離探針（`hermes-shanghan readyz`）。
+# 數據就緒二選一：
+#   1. git clone 本倉庫（數據隨庫提交，manifest sha256 即版本指紋）；
+#   2. wheel + 獨立分發的數據資產目錄，設 HERMES_SHANGHAN_DATA 指向它。
+
+[project.optional-dependencies]
+# Enables real LLMs via LiteLLM (100+ providers). Without it the system
+# transparently uses the deterministic `local` backend.
+llm = ["litellm>=1.40"]
+
+[project.scripts]
+hermes-shanghan = "hermes_shanghan.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "hermes_shanghan._version.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["hermes_shanghan*"]

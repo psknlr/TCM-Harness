@@ -1,0 +1,27 @@
+{
+ "last_pipeline_stats": {
+  "clauses_canonical": 398,
+  "clauses_auxiliary": 283,
+  "formulas_harvested": 116,
+  "initial_rules_raw": 1501,
+  "initial_rules_accepted": 1501,
+  "initial_rules_rejected": 0,
+  "audit_records": 7569,
+  "relations": 4286,
+  "variants": 616,
+  "commentaries": 2958,
+  "formula_pattern_rules": 113,
+  "six_channel_rules": 8,
+  "therapy_rules": 23,
+  "mistreatment_rules": 60,
+  "differential_rules": 64,
+  "merged_rules": 121,
+  "commentary_books_aligned": 9,
+  "clauses_multi_commentator": 395,
+  "dose_rows": 536,
+  "dose_unparsed": 5,
+  "trace_citation_edges": 40666,
+  "trace_citation_pairs": 13406,
+  "trace_claims": 7
+ }
+}

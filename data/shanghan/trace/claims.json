@@ -1,0 +1,1317 @@
+{
+ "note": "方證觀點庫：種子只給命題與術語，證據等級/首倡時間線/學派立場全部由 A/C 層逐字檢驗與朝代排序得出，多觀點並存不裁決。",
+ "n_claims": 7,
+ "claims": [
+  {
+   "claim_id": "CLAIM_GZT_YINGWEI",
+   "formula": "桂枝湯",
+   "claim": "桂枝湯證的核心病機為營衛不和，桂枝湯功在調和營衛",
+   "interpretive_terms": [
+    "營衛不和",
+    "調和營衛",
+    "榮衛不和",
+    "衛強營弱",
+    "營弱衛強",
+    "榮氣和",
+    "衛氣不和",
+    "營衛"
+   ],
+   "core_symptoms": [
+    "發熱",
+    "汗出",
+    "頭痛",
+    "嗇嗇惡寒",
+    "淅淅惡風",
+    "翕翕發熱",
+    "鼻鳴",
+    "乾嘔",
+    "惡風",
+    "自汗出"
+   ],
+   "core_pulse": [
+    "陽浮而陰弱",
+    "浮"
+   ],
+   "classical_evidence": [
+    "SHL_SONGBEN_0012",
+    "SHL_SONGBEN_0013",
+    "SHL_SONGBEN_0015",
+    "SHL_SONGBEN_0018",
+    "SHL_SONGBEN_0019",
+    "SHL_SONGBEN_0024",
+    "SHL_SONGBEN_0025",
+    "SHL_SONGBEN_0026",
+    "SHL_SONGBEN_0028",
+    "SHL_SONGBEN_0042",
+    "SHL_SONGBEN_0044",
+    "SHL_SONGBEN_0045",
+    "SHL_SONGBEN_0053",
+    "SHL_SONGBEN_0054",
+    "SHL_SONGBEN_0056",
+    "SHL_SONGBEN_0057",
+    "SHL_SONGBEN_0091",
+    "SHL_SONGBEN_0095",
+    "SHL_SONGBEN_0164",
+    "SHL_SONGBEN_0234",
+    "SHL_SONGBEN_0240",
+    "SHL_SONGBEN_0276",
+    "SHL_SONGBEN_0372",
+    "SHL_SONGBEN_0387",
+    "SHL_SONGBEN_AUX_0175",
+    "SHL_SONGBEN_AUX_0224",
+    "SHL_SONGBEN_AUX_0226",
+    "SHL_SONGBEN_AUX_0228",
+    "SHL_SONGBEN_AUX_0230",
+    "SHL_SONGBEN_AUX_0240",
+    "SHL_SONGBEN_AUX_0245",
+    "SHL_SONGBEN_AUX_0253",
+    "SHL_SONGBEN_AUX_0274"
+   ],
+   "terms_verbatim_in_original": {
+    "榮氣和": [
+     "SHL_SONGBEN_0053"
+    ],
+    "衛氣不和": [
+     "SHL_SONGBEN_0054"
+    ]
+   },
+   "commentarial_chronology": [
+    {
+     "commentator": "成無己",
+     "book": "註解傷寒論",
+     "dynasty": "金",
+     "dynasty_order": 25,
+     "school_id": "SCH_YIJING_ZHULUN",
+     "n_passages": 2,
+     "terms_used": [
+      "榮氣和",
+      "衛氣不和"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0053",
+      "SHL_SONGBEN_0054"
+     ],
+     "sample": "風則傷衛，寒則傷榮。衛受風邪而榮不病者，為榮氣和也。衛既客邪，則不能與榮氣和諧，亦不能衛護皮腠，是以常自汗出。與桂枝湯解"
+    },
+    {
+     "commentator": "方有執",
+     "book": "傷寒論條辨",
+     "dynasty": "明",
+     "dynasty_order": 40,
+     "school_id": "SCH_CUOJIAN",
+     "n_passages": 1,
+     "terms_used": [
+      "衛氣不和"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0054"
+     ],
+     "sample": "臟無他病。裡氣和也。時以暫言。謂或時則然。或時不然也。衛氣不和。表不固也。先其時。\n言於未發熱之先也。方見太陽上。"
+    },
+    {
+     "commentator": "尤怡",
+     "book": "傷寒貫珠集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_YIFA_LEIZHENG",
+     "n_passages": 1,
+     "terms_used": [
+      "營弱衛強",
+      "營衛"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0095"
+     ],
+     "sample": "此即前條衛不諧營自和之意。而申其說。救邪風者。救衛氣之為風邪所擾也。然仲景營弱衛強之說。不過發明所以發熱汗出之故。後人不"
+    },
+    {
+     "commentator": "張卿子",
+     "book": "張卿子傷寒論",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_WEIHU_JIULUN",
+     "n_passages": 2,
+     "terms_used": [
+      "榮氣和",
+      "衛氣不和"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0053",
+      "SHL_SONGBEN_0054"
+     ],
+     "sample": "風則傷衛。寒則傷榮。衛受風邪而榮不病者。為榮氣和也。衛既客邪。則不能與榮氣和諧。亦不能衛護皮腠。是以常自汗出。與桂枝湯。"
+    },
+    {
+     "commentator": "柯琴",
+     "book": "傷寒來蘇集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_FANGZHENG",
+     "n_passages": 8,
+     "terms_used": [
+      "營衛",
+      "調和營衛",
+      "營衛不和"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0024",
+      "SHL_SONGBEN_0095",
+      "SHL_SONGBEN_0091",
+      "SHL_SONGBEN_0387"
+     ],
+     "sample": "[前條治中風之始，此條治中風之變，桂枝湯煮取三升，初服者，先服一升也，\n卻與者，盡其二升也，熱鬱於心胸者，謂之煩，發於皮"
+    },
+    {
+     "commentator": "錢潢",
+     "book": "傷寒溯源集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_YIFA_LEIZHENG",
+     "n_passages": 5,
+     "terms_used": [
+      "衛強營弱",
+      "營衛",
+      "營弱衛強",
+      "衛氣不和"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0095",
+      "SHL_SONGBEN_0053",
+      "SHL_SONGBEN_0054",
+      "SHL_SONGBEN_0025",
+      "SHL_SONGBEN_0276"
+     ],
+     "sample": "衛以受邪而覺強。營未受邪而覺弱。太陽經之有營衛。如衣之有表裡也。表以垢膩而覺濃。裡無垢膩。\n故反覺薄耳。以發熱汗出為衛強"
+    },
+    {
+     "commentator": "丹波元簡",
+     "book": "傷寒論輯義",
+     "dynasty": "日本",
+     "dynasty_order": 55,
+     "school_id": "SCH_KAOZHENG",
+     "n_passages": 3,
+     "terms_used": [
+      "衛氣不和",
+      "營衛"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0053",
+      "SHL_SONGBEN_0054",
+      "SHL_SONGBEN_0091"
+     ],
+     "sample": "復發其汗。營衛和則愈。宜桂枝湯。（玉函。作病常自汗出者。此為營氣和。衛氣不和故也。營行脈中。為陰主內。衛行脈外。為陽主外"
+    }
+   ],
+   "first_proponent": {
+    "commentator": "成無己",
+    "book": "註解傷寒論",
+    "dynasty": "金",
+    "school_id": "SCH_YIJING_ZHULUN"
+   },
+   "first_proponent_note": "「最早可見」以在庫九注本為限；更早的散佚注釋不可考，不作臆斷。",
+   "term_first_use": {
+    "榮氣和": {
+     "commentator": "成無己",
+     "dynasty": "金"
+    },
+    "營弱衛強": {
+     "commentator": "尤怡",
+     "dynasty": "清"
+    },
+    "營衛": {
+     "commentator": "尤怡",
+     "dynasty": "清"
+    },
+    "營衛不和": {
+     "commentator": "柯琴",
+     "dynasty": "清"
+    },
+    "衛強營弱": {
+     "commentator": "錢潢",
+     "dynasty": "清"
+    },
+    "衛氣不和": {
+     "commentator": "成無己",
+     "dynasty": "金"
+    },
+    "調和營衛": {
+     "commentator": "柯琴",
+     "dynasty": "清"
+    }
+   },
+   "n_commentators_using_terms": 7,
+   "school_views": [
+    "SCH_CUOJIAN",
+    "SCH_FANGZHENG",
+    "SCH_KAOZHENG",
+    "SCH_WEIHU_JIULUN",
+    "SCH_YIFA_LEIZHENG",
+    "SCH_YIJING_ZHULUN"
+   ],
+   "controversies": [
+    "營衛不和是否僅限太陽中風，抑或可擴展至雜病自汗",
+    "「調和營衛」為後世方義歸納，與原文「解肌」表述的關係"
+   ],
+   "evidence_grade": "原文直述成分 + 後世發揮",
+   "warning": "部分術語逐字見於原文，但命題的完整表述仍含後世歸納成分。"
+  },
+  {
+   "claim_id": "CLAIM_XCHT_SHUJI",
+   "formula": "小柴胡湯",
+   "claim": "小柴胡湯證屬少陽樞機不利，治以和解少陽",
+   "interpretive_terms": [
+    "樞機",
+    "和解",
+    "半表半裏",
+    "半在裏半在外",
+    "樞"
+   ],
+   "core_symptoms": [
+    "嘔",
+    "往來寒熱",
+    "發熱",
+    "不欲飲食",
+    "渴",
+    "惡風",
+    "手足溫",
+    "脅下滿",
+    "頸項強",
+    "胸脅苦滿"
+   ],
+   "core_pulse": [
+    "沉緊"
+   ],
+   "classical_evidence": [
+    "SHL_SONGBEN_0037",
+    "SHL_SONGBEN_0096",
+    "SHL_SONGBEN_0097",
+    "SHL_SONGBEN_0098",
+    "SHL_SONGBEN_0099",
+    "SHL_SONGBEN_0100",
+    "SHL_SONGBEN_0101",
+    "SHL_SONGBEN_0103",
+    "SHL_SONGBEN_0104",
+    "SHL_SONGBEN_0123",
+    "SHL_SONGBEN_0144",
+    "SHL_SONGBEN_0148",
+    "SHL_SONGBEN_0149",
+    "SHL_SONGBEN_0229",
+    "SHL_SONGBEN_0230",
+    "SHL_SONGBEN_0231",
+    "SHL_SONGBEN_0266",
+    "SHL_SONGBEN_0267",
+    "SHL_SONGBEN_0379",
+    "SHL_SONGBEN_0394",
+    "SHL_SONGBEN_AUX_0251"
+   ],
+   "terms_verbatim_in_original": {
+    "半在裏半在外": [
+     "SHL_SONGBEN_0148"
+    ]
+   },
+   "commentarial_chronology": [
+    {
+     "commentator": "成無己",
+     "book": "註解傷寒論",
+     "dynasty": "金",
+     "dynasty_order": 25,
+     "school_id": "SCH_YIJING_ZHULUN",
+     "n_passages": 4,
+     "terms_used": [
+      "和解"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0101",
+      "SHL_SONGBEN_0230",
+      "SHL_SONGBEN_0266",
+      "SHL_SONGBEN_0394"
+     ],
+     "sample": "邪在半表半裡之間，為柴胡證，即未作裡實，醫便以藥下之；若柴胡證仍在者，雖下之不為逆，可復與柴胡湯以和解之。得湯，邪氣還表"
+    },
+    {
+     "commentator": "尤怡",
+     "book": "傷寒貫珠集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_YIFA_LEIZHENG",
+     "n_passages": 6,
+     "terms_used": [
+      "和解"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0149",
+      "SHL_SONGBEN_0230",
+      "SHL_SONGBEN_0231",
+      "SHL_SONGBEN_0096",
+      "SHL_SONGBEN_0101",
+      "SHL_SONGBEN_0379"
+     ],
+     "sample": "結胸及痞。不特太陽誤下有之。即少陽誤下亦有之。柴胡湯證具者。少陽嘔而發熱。及脈弦口苦等證具在也。是宜和解。而反下之。於法"
+    },
+    {
+     "commentator": "張卿子",
+     "book": "張卿子傷寒論",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_WEIHU_JIULUN",
+     "n_passages": 5,
+     "terms_used": [
+      "和解"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0037",
+      "SHL_SONGBEN_0101",
+      "SHL_SONGBEN_0230",
+      "SHL_SONGBEN_0266",
+      "SHL_SONGBEN_0394"
+     ],
+     "sample": "十日以去。向解之時也。脈浮細而嗜臥者。表邪已罷也。病雖已和解之。若脈但浮而不細者。則邪氣但在表也。與麻黃湯發散之。"
+    },
+    {
+     "commentator": "柯琴",
+     "book": "傷寒來蘇集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_FANGZHENG",
+     "n_passages": 14,
+     "terms_used": [
+      "樞機",
+      "樞",
+      "半表半裏",
+      "和解"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0037",
+      "SHL_SONGBEN_0149",
+      "SHL_SONGBEN_0096",
+      "SHL_SONGBEN_0097",
+      "SHL_SONGBEN_0099",
+      "SHL_SONGBEN_0266",
+      "SHL_SONGBEN_0098",
+      "SHL_SONGBEN_0103",
+      "SHL_SONGBEN_0267"
+     ],
+     "sample": "[脈微細，但欲寐，少陰症也，浮細而嗜臥，無少陰症者，雖十日後，尚屬太陽，\n此表解而不了了之謂，設見胸滿嗜臥，亦太陽之餘邪"
+    },
+    {
+     "commentator": "錢潢",
+     "book": "傷寒溯源集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_YIFA_LEIZHENG",
+     "n_passages": 5,
+     "terms_used": [
+      "和解"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0230",
+      "SHL_SONGBEN_0101",
+      "SHL_SONGBEN_0037",
+      "SHL_SONGBEN_0379",
+      "SHL_SONGBEN_0394"
+     ],
+     "sample": "此亦陽明兼少陽之證也。上文雖潮熱而大便反溏。小便自可。此雖不大便而未見潮熱。皆為陽明熱邪未實於胃之證。前云胸脅滿未去。此"
+    },
+    {
+     "commentator": "丹波元簡",
+     "book": "傷寒論輯義",
+     "dynasty": "日本",
+     "dynasty_order": 55,
+     "school_id": "SCH_KAOZHENG",
+     "n_passages": 5,
+     "terms_used": [
+      "和解"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0100",
+      "SHL_SONGBEN_0101",
+      "SHL_SONGBEN_0230",
+      "SHL_SONGBEN_0267",
+      "SHL_SONGBEN_0379"
+     ],
+     "sample": "者小間。有與字。玉函。者字。作即與。）\n〔汪〕此條。乃少陽病兼挾裡虛之證。傷寒脈弦者。弦本少陽之脈。宜與小柴胡湯。茲但陰"
+    }
+   ],
+   "first_proponent": {
+    "commentator": "成無己",
+    "book": "註解傷寒論",
+    "dynasty": "金",
+    "school_id": "SCH_YIJING_ZHULUN"
+   },
+   "first_proponent_note": "「最早可見」以在庫九注本為限；更早的散佚注釋不可考，不作臆斷。",
+   "term_first_use": {
+    "半表半裏": {
+     "commentator": "柯琴",
+     "dynasty": "清"
+    },
+    "和解": {
+     "commentator": "成無己",
+     "dynasty": "金"
+    },
+    "樞": {
+     "commentator": "柯琴",
+     "dynasty": "清"
+    },
+    "樞機": {
+     "commentator": "柯琴",
+     "dynasty": "清"
+    }
+   },
+   "n_commentators_using_terms": 6,
+   "school_views": [
+    "SCH_FANGZHENG",
+    "SCH_KAOZHENG",
+    "SCH_WEIHU_JIULUN",
+    "SCH_YIFA_LEIZHENG",
+    "SCH_YIJING_ZHULUN"
+   ],
+   "controversies": [
+    "「半表半裏」與原文「半在裏半在外」的異同",
+    "但見一證便是的適用邊界"
+   ],
+   "evidence_grade": "原文直述成分 + 後世發揮",
+   "warning": "部分術語逐字見於原文，但命題的完整表述仍含後世歸納成分。"
+  },
+  {
+   "claim_id": "CLAIM_DCQT_FUSHI",
+   "formula": "大承氣湯",
+   "claim": "大承氣湯證為陽明腑實，治以峻下燥屎",
+   "interpretive_terms": [
+    "腑實",
+    "燥屎",
+    "胃家實",
+    "痞滿燥實"
+   ],
+   "core_symptoms": [
+    "潮熱",
+    "不大便",
+    "譫語",
+    "汗出",
+    "發熱",
+    "不惡寒",
+    "腹滿",
+    "喘",
+    "短氣",
+    "手足濈然汗出"
+   ],
+   "core_pulse": [
+    "遲",
+    "弦"
+   ],
+   "classical_evidence": [
+    "SHL_SONGBEN_0208",
+    "SHL_SONGBEN_0209",
+    "SHL_SONGBEN_0212",
+    "SHL_SONGBEN_0215",
+    "SHL_SONGBEN_0217",
+    "SHL_SONGBEN_0220",
+    "SHL_SONGBEN_0238",
+    "SHL_SONGBEN_0240",
+    "SHL_SONGBEN_0241",
+    "SHL_SONGBEN_0242",
+    "SHL_SONGBEN_0251",
+    "SHL_SONGBEN_0252",
+    "SHL_SONGBEN_0253",
+    "SHL_SONGBEN_0254",
+    "SHL_SONGBEN_0255",
+    "SHL_SONGBEN_0256",
+    "SHL_SONGBEN_0320",
+    "SHL_SONGBEN_0321",
+    "SHL_SONGBEN_0322",
+    "SHL_SONGBEN_AUX_0209",
+    "SHL_SONGBEN_AUX_0210",
+    "SHL_SONGBEN_AUX_0211",
+    "SHL_SONGBEN_AUX_0212",
+    "SHL_SONGBEN_AUX_0213",
+    "SHL_SONGBEN_AUX_0214",
+    "SHL_SONGBEN_AUX_0215",
+    "SHL_SONGBEN_AUX_0217"
+   ],
+   "terms_verbatim_in_original": {
+    "燥屎": [
+     "SHL_SONGBEN_0209",
+     "SHL_SONGBEN_0215",
+     "SHL_SONGBEN_0217",
+     "SHL_SONGBEN_0238",
+     "SHL_SONGBEN_0241",
+     "SHL_SONGBEN_0242"
+    ]
+   },
+   "commentarial_chronology": [
+    {
+     "commentator": "成無己",
+     "book": "註解傷寒論",
+     "dynasty": "金",
+     "dynasty_order": 25,
+     "school_id": "SCH_YIJING_ZHULUN",
+     "n_passages": 6,
+     "terms_used": [
+      "燥屎"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0209",
+      "SHL_SONGBEN_0215",
+      "SHL_SONGBEN_0217",
+      "SHL_SONGBEN_0238",
+      "SHL_SONGBEN_0241",
+      "SHL_SONGBEN_0242"
+     ],
+     "sample": "潮熱者實，得大便微硬者，便可攻之；若便不硬者，則熱未成實，雖有潮熱亦未可攻。若不大便六七日，恐有燥屎，當先與小承氣湯漬之"
+    },
+    {
+     "commentator": "方有執",
+     "book": "傷寒論條辨",
+     "dynasty": "明",
+     "dynasty_order": 40,
+     "school_id": "SCH_CUOJIAN",
+     "n_passages": 2,
+     "terms_used": [
+      "燥屎"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0242",
+      "SHL_SONGBEN_0241"
+     ],
+     "sample": "小便不利。所以大便有乍難乍易也。時有微熱。陽明潮作也。喘冒不能臥。胃不和也。故曰有燥屎。方見陽明篇。下同。"
+    },
+    {
+     "commentator": "尤怡",
+     "book": "傷寒貫珠集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_YIFA_LEIZHENG",
+     "n_passages": 4,
+     "terms_used": [
+      "燥屎"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0241",
+      "SHL_SONGBEN_0209",
+      "SHL_SONGBEN_0238",
+      "SHL_SONGBEN_0217"
+     ],
+     "sample": "大下之後。胃氣復實。煩滿復增者。以其人本有宿食未去。邪氣復得而據之也。不然。下後胃虛。豈得更與大下哉。蓋陽明病實則邪易聚"
+    },
+    {
+     "commentator": "張卿子",
+     "book": "張卿子傷寒論",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_WEIHU_JIULUN",
+     "n_passages": 5,
+     "terms_used": [
+      "燥屎"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0209",
+      "SHL_SONGBEN_0215",
+      "SHL_SONGBEN_0217",
+      "SHL_SONGBEN_0241",
+      "SHL_SONGBEN_0242"
+     ],
+     "sample": "潮熱者實。得大便微硬者。便可攻之。若便不硬者。則熱未成實。微有潮熱。亦未可攻。若不大便六七日。恐有燥屎。當先與小承氣湯漬"
+    },
+    {
+     "commentator": "柯琴",
+     "book": "傷寒來蘇集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_FANGZHENG",
+     "n_passages": 8,
+     "terms_used": [
+      "燥屎",
+      "胃家實"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0251",
+      "SHL_SONGBEN_0209",
+      "SHL_SONGBEN_0217",
+      "SHL_SONGBEN_0238"
+     ],
+     "sample": "[得病二三日，尚在三陽之界，其脈弱，恐為無陽之徵，無太陽桂枝證，無少陽\n柴胡證，則病不在表，而煩躁心下硬，是陽邪入陰，病"
+    },
+    {
+     "commentator": "錢潢",
+     "book": "傷寒溯源集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_YIFA_LEIZHENG",
+     "n_passages": 3,
+     "terms_used": [
+      "燥屎",
+      "胃家實"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0209",
+      "SHL_SONGBEN_0241",
+      "SHL_SONGBEN_0217"
+     ],
+     "sample": "此以下四條。皆示人以用承氣之法。若認證未的。不可輕投峻劑。當先以小承氣探其虛實。以為進止。不可忽遽以致誤也。言病在陽明。"
+    },
+    {
+     "commentator": "黃元御",
+     "book": "傷寒懸解",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_QIHUA",
+     "n_passages": 1,
+     "terms_used": [
+      "燥屎"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0215"
+     ],
+     "sample": "===大承氣證十八（陽明三十七）===\n病患小便不利大便乍難乍易時有微熱喘冒不得臥者有燥屎也宜大承氣湯土燥水枯則小便不利"
+    },
+    {
+     "commentator": "丹波元簡",
+     "book": "傷寒論輯義",
+     "dynasty": "日本",
+     "dynasty_order": 55,
+     "school_id": "SCH_KAOZHENG",
+     "n_passages": 4,
+     "terms_used": [
+      "燥屎",
+      "胃家實"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0209",
+      "SHL_SONGBEN_0238",
+      "SHL_SONGBEN_0241",
+      "SHL_SONGBEN_0320"
+     ],
+     "sample": "不轉失氣者。慎不可攻也。（不可與之。成本。脫可字。玉函。作勿與之。此有燥屎也。成本。無也字。轉失氣。玉函。並作轉矢氣。其"
+    }
+   ],
+   "first_proponent": {
+    "commentator": "成無己",
+    "book": "註解傷寒論",
+    "dynasty": "金",
+    "school_id": "SCH_YIJING_ZHULUN"
+   },
+   "first_proponent_note": "「最早可見」以在庫九注本為限；更早的散佚注釋不可考，不作臆斷。",
+   "term_first_use": {
+    "燥屎": {
+     "commentator": "成無己",
+     "dynasty": "金"
+    },
+    "胃家實": {
+     "commentator": "柯琴",
+     "dynasty": "清"
+    }
+   },
+   "n_commentators_using_terms": 8,
+   "school_views": [
+    "SCH_CUOJIAN",
+    "SCH_FANGZHENG",
+    "SCH_KAOZHENG",
+    "SCH_QIHUA",
+    "SCH_WEIHU_JIULUN",
+    "SCH_YIFA_LEIZHENG",
+    "SCH_YIJING_ZHULUN"
+   ],
+   "controversies": [
+    "「痞滿燥實堅」五字訣為後世歸納，原文無此並稱"
+   ],
+   "evidence_grade": "原文直述成分 + 後世發揮",
+   "warning": "部分術語逐字見於原文，但命題的完整表述仍含後世歸納成分。"
+  },
+  {
+   "claim_id": "CLAIM_BXXXT_HANRE",
+   "formula": "半夏瀉心湯",
+   "claim": "半夏瀉心湯證為寒熱錯雜之痞，治以辛開苦降",
+   "interpretive_terms": [
+    "寒熱錯雜",
+    "辛開苦降",
+    "痞",
+    "中焦"
+   ],
+   "core_symptoms": [],
+   "core_pulse": [],
+   "classical_evidence": [
+    "SHL_SONGBEN_0149"
+   ],
+   "terms_verbatim_in_original": {
+    "痞": [
+     "SHL_SONGBEN_0149"
+    ]
+   },
+   "commentarial_chronology": [
+    {
+     "commentator": "成無己",
+     "book": "註解傷寒論",
+     "dynasty": "金",
+     "dynasty_order": 25,
+     "school_id": "SCH_YIJING_ZHULUN",
+     "n_passages": 1,
+     "terms_used": [
+      "痞"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0149"
+     ],
+     "sample": "傷寒五六日，邪在半表半裡之時；嘔而發熱，邪在半表半裡之證，是為柴胡證具。以他藥下之，柴胡證不罷者，不為逆，卻與柴胡湯則愈"
+    },
+    {
+     "commentator": "尤怡",
+     "book": "傷寒貫珠集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_YIFA_LEIZHENG",
+     "n_passages": 1,
+     "terms_used": [
+      "痞"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0149"
+     ],
+     "sample": "結胸及痞。不特太陽誤下有之。即少陽誤下亦有之。柴胡湯證具者。少陽嘔而發熱。及脈弦口苦等證具在也。是宜和解。而反下之。於法"
+    },
+    {
+     "commentator": "張卿子",
+     "book": "張卿子傷寒論",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_WEIHU_JIULUN",
+     "n_passages": 1,
+     "terms_used": [
+      "痞"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0149"
+     ],
+     "sample": "傷寒五六日。邪在半表半裡之時。嘔而發熱。邪在半表半裡之證。是為柴胡證具。以他藥下之。柴胡證不罷者。不為逆。卻與柴胡湯則愈"
+    },
+    {
+     "commentator": "柯琴",
+     "book": "傷寒來蘇集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_FANGZHENG",
+     "n_passages": 2,
+     "terms_used": [
+      "痞"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0149"
+     ],
+     "sample": "[嘔而發熱者，小柴胡症也，嘔多雖有陽明症，不可攻之，若有下症，亦宜大柴\n胡，而以他藥下之誤矣，誤下後有二症者，少陽為半表"
+    },
+    {
+     "commentator": "錢潢",
+     "book": "傷寒溯源集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_YIFA_LEIZHENG",
+     "n_passages": 2,
+     "terms_used": [
+      "痞"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0149"
+     ],
+     "sample": "此條當在少陽壞病中。因屬痞症。故類附於此。\n此以邪在少陽而成痞結。故不曰太陽。而但以傷寒二字冠之也。五六日。邪入漸深之候"
+    },
+    {
+     "commentator": "丹波元簡",
+     "book": "傷寒論輯義",
+     "dynasty": "日本",
+     "dynasty_order": 55,
+     "school_id": "SCH_KAOZHENG",
+     "n_passages": 1,
+     "terms_used": [
+      "痞"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0149"
+     ],
+     "sample": "柴胡不中與之。宜半夏瀉心湯。（外台。此條作太陽病下之。其脈促不結胸者。此為欲解也。若心下滿硬痛者。\n此為結胸也。大陷胸湯"
+    }
+   ],
+   "first_proponent": {
+    "commentator": "成無己",
+    "book": "註解傷寒論",
+    "dynasty": "金",
+    "school_id": "SCH_YIJING_ZHULUN"
+   },
+   "first_proponent_note": "「最早可見」以在庫九注本為限；更早的散佚注釋不可考，不作臆斷。",
+   "term_first_use": {
+    "痞": {
+     "commentator": "成無己",
+     "dynasty": "金"
+    }
+   },
+   "n_commentators_using_terms": 6,
+   "school_views": [
+    "SCH_FANGZHENG",
+    "SCH_KAOZHENG",
+    "SCH_WEIHU_JIULUN",
+    "SCH_YIFA_LEIZHENG",
+    "SCH_YIJING_ZHULUN"
+   ],
+   "controversies": [
+    "「辛開苦降」為金元以降藥性理論歸納"
+   ],
+   "evidence_grade": "原文直述成分 + 後世發揮",
+   "warning": "部分術語逐字見於原文，但命題的完整表述仍含後世歸納成分。"
+  },
+  {
+   "claim_id": "CLAIM_SNT_HUIYANG",
+   "formula": "四逆湯",
+   "claim": "四逆湯證為少陰陽衰陰盛，治以回陽救逆",
+   "interpretive_terms": [
+    "回陽",
+    "救逆",
+    "亡陽",
+    "陽衰",
+    "陰盛"
+   ],
+   "core_symptoms": [
+    "下利清穀",
+    "下利",
+    "發熱",
+    "大汗出",
+    "惡寒",
+    "小便復利",
+    "四肢疼",
+    "厥逆",
+    "厥冷",
+    "嘔"
+   ],
+   "core_pulse": [
+    "浮而遲",
+    "浮遲",
+    "弱",
+    "微欲絕"
+   ],
+   "classical_evidence": [
+    "SHL_SONGBEN_0029",
+    "SHL_SONGBEN_0091",
+    "SHL_SONGBEN_0092",
+    "SHL_SONGBEN_0225",
+    "SHL_SONGBEN_0323",
+    "SHL_SONGBEN_0324",
+    "SHL_SONGBEN_0353",
+    "SHL_SONGBEN_0354",
+    "SHL_SONGBEN_0372",
+    "SHL_SONGBEN_0377",
+    "SHL_SONGBEN_0388",
+    "SHL_SONGBEN_0389",
+    "SHL_SONGBEN_AUX_0280"
+   ],
+   "terms_verbatim_in_original": {},
+   "commentarial_chronology": [
+    {
+     "commentator": "成無己",
+     "book": "註解傷寒論",
+     "dynasty": "金",
+     "dynasty_order": 25,
+     "school_id": "SCH_YIJING_ZHULUN",
+     "n_passages": 3,
+     "terms_used": [
+      "亡陽"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0029",
+      "SHL_SONGBEN_0353",
+      "SHL_SONGBEN_0389"
+     ],
+     "sample": "脈浮，自汗出，小便數而惡寒者，陽氣不足也。心煩、腳攣急者，陰氣不足也。陰陽血氣俱虛，則不可發汗，若與桂枝湯攻表，則又損陽"
+    },
+    {
+     "commentator": "方有執",
+     "book": "傷寒論條辨",
+     "dynasty": "明",
+     "dynasty_order": 40,
+     "school_id": "SCH_CUOJIAN",
+     "n_passages": 2,
+     "terms_used": [
+      "回陽",
+      "亡陽",
+      "陽衰"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0353",
+      "SHL_SONGBEN_0388"
+     ],
+     "sample": "大汗出。陽虛而表不固也。熱不去。言邪不除也。內拘急四肢疼者。亡津液。而骨屬不利也。\n下利。厥逆。而惡寒者。亡陽。而陰寒內"
+    },
+    {
+     "commentator": "尤怡",
+     "book": "傷寒貫珠集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_YIFA_LEIZHENG",
+     "n_passages": 1,
+     "terms_used": [
+      "陰盛"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0354"
+     ],
+     "sample": "此亦陽病誤治而變陰寒之證。成氏所謂大汗若大下利。表裡雖殊。其亡津液損陽氣一也。陽虛陰勝。則生厥逆。雖無裡急下利等證。亦必"
+    },
+    {
+     "commentator": "張卿子",
+     "book": "張卿子傷寒論",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_WEIHU_JIULUN",
+     "n_passages": 2,
+     "terms_used": [
+      "亡陽"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0353",
+      "SHL_SONGBEN_0389"
+     ],
+     "sample": "大汗出。則熱當去。熱反不去者。亡陽也。內拘急下利者。寒甚於裡。四肢疼。厥逆而惡寒者。寒甚於表。與四逆湯。復陽散寒。"
+    },
+    {
+     "commentator": "柯琴",
+     "book": "傷寒來蘇集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_FANGZHENG",
+     "n_passages": 8,
+     "terms_used": [
+      "亡陽",
+      "救逆"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0029",
+      "SHL_SONGBEN_0225",
+      "SHL_SONGBEN_0354",
+      "SHL_SONGBEN_0353"
+     ],
+     "sample": "[此非桂枝症，兩形似桂枝症，碔砆類玉，大宜著眼。桂枝症以自汗出為提綱，\n然除頭痛發熱，惡寒惡風，及鼻鳴乾嘔外，有一件不合"
+    },
+    {
+     "commentator": "錢潢",
+     "book": "傷寒溯源集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_YIFA_LEIZHENG",
+     "n_passages": 1,
+     "terms_used": [
+      "陰盛"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0225"
+     ],
+     "sample": "此與少陰厥陰裡寒外熱同義。若風脈浮而表熱。則浮脈必數。今表雖熱而脈遲。則知陰寒在裡。陰盛格陽於外而表熱也。虛陽在外。故脈"
+    },
+    {
+     "commentator": "黃元御",
+     "book": "傷寒懸解",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_QIHUA",
+     "n_passages": 1,
+     "terms_used": [
+      "回陽"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0029"
+     ],
+     "sample": "脈浮自汗裡熱外泄也小便數則大便必硬心煩者胃熱之薰沖也陽明病雖得之一日惡寒將自罷即自汗出而惡熱微惡寒者表未全解自汗雖出而未"
+    },
+    {
+     "commentator": "丹波元簡",
+     "book": "傷寒論輯義",
+     "dynasty": "日本",
+     "dynasty_order": 55,
+     "school_id": "SCH_KAOZHENG",
+     "n_passages": 2,
+     "terms_used": [
+      "陰盛",
+      "回陽"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0225",
+      "SHL_SONGBEN_0353"
+     ],
+     "sample": "〔錢〕此與少陰厥陰。裡寒外熱。同義。若風脈浮而表熱。則浮脈必數。今表雖熱而脈遲。則知陰寒在裡。\n陰盛格陽於外。而表熱也。"
+    }
+   ],
+   "first_proponent": {
+    "commentator": "成無己",
+    "book": "註解傷寒論",
+    "dynasty": "金",
+    "school_id": "SCH_YIJING_ZHULUN"
+   },
+   "first_proponent_note": "「最早可見」以在庫九注本為限；更早的散佚注釋不可考，不作臆斷。",
+   "term_first_use": {
+    "亡陽": {
+     "commentator": "成無己",
+     "dynasty": "金"
+    },
+    "回陽": {
+     "commentator": "方有執",
+     "dynasty": "明"
+    },
+    "救逆": {
+     "commentator": "柯琴",
+     "dynasty": "清"
+    },
+    "陰盛": {
+     "commentator": "尤怡",
+     "dynasty": "清"
+    },
+    "陽衰": {
+     "commentator": "方有執",
+     "dynasty": "明"
+    }
+   },
+   "n_commentators_using_terms": 8,
+   "school_views": [
+    "SCH_CUOJIAN",
+    "SCH_FANGZHENG",
+    "SCH_KAOZHENG",
+    "SCH_QIHUA",
+    "SCH_WEIHU_JIULUN",
+    "SCH_YIFA_LEIZHENG",
+    "SCH_YIJING_ZHULUN"
+   ],
+   "controversies": [
+    "「回陽救逆」治法名為後世治法學歸納"
+   ],
+   "evidence_grade": "後世歸納",
+   "warning": "解釋性術語僅見於注文層——該命題屬後世歸納，應與原文直述區分。"
+  },
+  {
+   "claim_id": "CLAIM_WLS_XUSHUI",
+   "formula": "五苓散",
+   "claim": "五苓散證為太陽蓄水、膀胱氣化不利",
+   "interpretive_terms": [
+    "蓄水",
+    "氣化",
+    "水逆",
+    "膀胱"
+   ],
+   "core_symptoms": [
+    "渴",
+    "發熱",
+    "小便不利",
+    "汗出",
+    "渴欲飲水",
+    "心下痞",
+    "大汗出",
+    "煩躁不得眠",
+    "微熱",
+    "消渴"
+   ],
+   "core_pulse": [
+    "浮",
+    "浮數"
+   ],
+   "classical_evidence": [
+    "SHL_SONGBEN_0071",
+    "SHL_SONGBEN_0072",
+    "SHL_SONGBEN_0073",
+    "SHL_SONGBEN_0074",
+    "SHL_SONGBEN_0141",
+    "SHL_SONGBEN_0156",
+    "SHL_SONGBEN_0244",
+    "SHL_SONGBEN_0386"
+   ],
+   "terms_verbatim_in_original": {
+    "水逆": [
+     "SHL_SONGBEN_0074"
+    ]
+   },
+   "commentarial_chronology": [
+    {
+     "commentator": "成無己",
+     "book": "註解傷寒論",
+     "dynasty": "金",
+     "dynasty_order": 25,
+     "school_id": "SCH_YIJING_ZHULUN",
+     "n_passages": 1,
+     "terms_used": [
+      "水逆"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0074"
+     ],
+     "sample": "中風發熱，至六七日，則當解；若不解煩者，邪在表也。渴欲飲水，邪傳裡也。裡熱甚則能消（熊校記：裡熱甚則能水，汪本能下增消字"
+    },
+    {
+     "commentator": "尤怡",
+     "book": "傷寒貫珠集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_YIFA_LEIZHENG",
+     "n_passages": 4,
+     "terms_used": [
+      "水逆",
+      "膀胱"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0074",
+      "SHL_SONGBEN_0071",
+      "SHL_SONGBEN_0073",
+      "SHL_SONGBEN_0141"
+     ],
+     "sample": "太陽風邪。至六七日之久而不解。則風變熱而傳裡。故煩而渴。有表裡證。即身熱煩渴之謂。\n渴欲飲水。水氣不行。而反上逆則吐。名"
+    },
+    {
+     "commentator": "張卿子",
+     "book": "張卿子傷寒論",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_WEIHU_JIULUN",
+     "n_passages": 2,
+     "terms_used": [
+      "膀胱",
+      "水逆"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0071",
+      "SHL_SONGBEN_0074"
+     ],
+     "sample": "小便不利而渴。此膀胱蓄熱津液不行也。與五苓散。以利水行津。\n發汗。已解。胃中干。煩躁不得眠。欲飲水者。少少與之。胃氣得潤"
+    },
+    {
+     "commentator": "柯琴",
+     "book": "傷寒來蘇集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_FANGZHENG",
+     "n_passages": 4,
+     "terms_used": [
+      "水逆",
+      "膀胱",
+      "氣化"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0074",
+      "SHL_SONGBEN_0071"
+     ],
+     "sample": "[表熱不解，內復煩渴者，因於發汗過多，反不受水者，是其人心下有水氣因離\n中之真水不足，則膻中之火用不宣，邪水凝結於內，水"
+    },
+    {
+     "commentator": "錢潢",
+     "book": "傷寒溯源集",
+     "dynasty": "清",
+     "dynasty_order": 50,
+     "school_id": "SCH_YIFA_LEIZHENG",
+     "n_passages": 5,
+     "terms_used": [
+      "水逆",
+      "膀胱",
+      "氣化"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0071",
+      "SHL_SONGBEN_0072",
+      "SHL_SONGBEN_0073",
+      "SHL_SONGBEN_0141",
+      "SHL_SONGBEN_0386"
+     ],
+     "sample": "此條當作兩截解。發汗後大汗出二句。乃一條誤汗之總領。自胃中干。至胃氣和則愈。是誤汗之虛邪犯胃。故不須立治。但飲水而使胃和"
+    },
+    {
+     "commentator": "丹波元簡",
+     "book": "傷寒論輯義",
+     "dynasty": "日本",
+     "dynasty_order": 55,
+     "school_id": "SCH_KAOZHENG",
+     "n_passages": 1,
+     "terms_used": [
+      "蓄水",
+      "膀胱"
+     ],
+     "clause_ids": [
+      "SHL_SONGBEN_0072"
+     ],
+     "sample": "〔方〕已者。言發汗畢。非謂表病罷也。煩渴者。膀胱水蓄。不化津液。故用四苓以利之。浮數者。外表未除。故憑一桂以和之。所以謂"
+    }
+   ],
+   "first_proponent": {
+    "commentator": "成無己",
+    "book": "註解傷寒論",
+    "dynasty": "金",
+    "school_id": "SCH_YIJING_ZHULUN"
+   },
+   "first_proponent_note": "「最早可見」以在庫九注本為限；更早的散佚注釋不可考，不作臆斷。",
+   "term_first_use": {
+    "氣化": {
+     "commentator": "柯琴",
+     "dynasty": "清"
+    },
+    "水逆": {
+     "commentator": "成無己",
+     "dynasty": "金"
+    },
+    "膀胱": {
+     "commentator": "尤怡",
+     "dynasty": "清"
+    },
+    "蓄水": {
+     "commentator": "丹波元簡",
+     "dynasty": "日本"
+    }
+   },
+   "n_commentators_using_terms": 6,
+   "school_views": [
+    "SCH_FANGZHENG",
+    "SCH_KAOZHENG",
+    "SCH_WEIHU_JIULUN",
+    "SCH_YIFA_LEIZHENG",
+    "SCH_YIJING_ZHULUN"
+   ],
+   "controversies": [
+    "「太陽蓄水」為後世六經氣化框架下的歸納",
+    "五苓散主治重心在表裏雙解抑或利水"
+   ],
+   "evidence_grade": "原文直述成分 + 後世發揮",
+   "warning": "部分術語逐字見於原文，但命題的完整表述仍含後世歸納成分。"
+  },
+  {
+   "claim_id": "CLAIM_BHT_JINGZHENG",
+   "formula": "白虎湯",
+   "claim": "白虎湯證為陽明經證（表裏俱熱），治以辛寒清氣",
+   "interpretive_terms": [
+    "經證",
+    "表裏俱熱",
+    "清氣",
+    "氣分"
+   ],
+   "core_symptoms": [
+    "腹滿",
+    "身重",
+    "口不仁",
+    "面垢",
+    "譫語",
+    "遺尿",
+    "手足厥冷",
+    "自汗出",
+    "厥"
+   ],
+   "core_pulse": [
+    "浮滑",
+    "滑"
+   ],
+   "classical_evidence": [
+    "SHL_SONGBEN_0176",
+    "SHL_SONGBEN_0219",
+    "SHL_SONGBEN_0350",
+    "SHL_SONGBEN_AUX_0238"
+   ],
+   "terms_verbatim_in_original": {},
+   "commentarial_chronology": [],
+   "first_proponent": {},
+   "first_proponent_note": "「最早可見」以在庫九注本為限；更早的散佚注釋不可考，不作臆斷。",
+   "term_first_use": {},
+   "n_commentators_using_terms": 0,
+   "school_views": [],
+   "controversies": [
+    "陽明「經證/腑證」二分為後世歸納，原文無此對稱",
+    "白虎湯禁例（表不解者不可與）的邊界"
+   ],
+   "evidence_grade": "待考（庫內無逐字術語證據）",
+   "warning": "解釋性術語僅見於注文層——該命題屬後世歸納，應與原文直述區分。"
+  }
+ ]
+}

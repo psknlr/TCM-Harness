@@ -1,0 +1,1433 @@
+{
+ "params": {
+  "shingle_clause": 8,
+  "full_quote_coverage": 0.7,
+  "rewrite_sim_low": 0.45,
+  "generic_gram_cap": 20,
+  "n_generic_grams_dropped": 0,
+  "note": "存疑引用=有引述標記但傷寒論內無可回源匹配（多為引《內經》等他書），只計數不猜出處；深度意譯檢測留給 LLM 增益層。"
+ },
+ "books": [
+  {
+   "book_dir": "傷寒兼證析義",
+   "book": "傷寒兼證析義",
+   "author": "張倬",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 232,
+   "n_edges": 71,
+   "n_marker_unresolved": 119,
+   "unresolved_examples": [
+    {
+     "marker": "不能兼善其術也，余曰：",
+     "segment": "安有滔滔江漢不通潮汐者乎苟能純一其道則圓",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "氣，\n故曰先天，若云",
+     "segment": "腎本受傷致病則有質之精依然後天水穀所化安",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "不制水之候，王太僕云：",
+     "segment": "食不得水是有火也食入反出是無火也觀噎膈反",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "中寒論辯證廣注",
+   "book": "中寒論辯證廣注",
+   "author": "丹波元胤",
+   "dynasty": "日本",
+   "layer": "P",
+   "n_paragraphs": 700,
+   "n_edges": 362,
+   "n_marker_unresolved": 252,
+   "unresolved_examples": [
+    {
+     "marker": "所取諸注不敢隱竊必曰",
+     "segment": "某書曰某姓氏其附鄙意必曰琥按曰愚按曰愚謂",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "注不敢隱竊必曰某書曰",
+     "segment": "某姓氏其附鄙意必曰琥按曰愚按曰愚謂或愚意",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "曰某姓氏其附鄙意必曰",
+     "segment": "琥按曰愚按曰愚謂或愚意及設為或問而余答也",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "仲景傷寒補亡論",
+   "book": "仲景傷寒補亡論",
+   "author": "郭雍",
+   "dynasty": "宋",
+   "layer": "P",
+   "n_paragraphs": 2046,
+   "n_edges": 1979,
+   "n_marker_unresolved": 857,
+   "unresolved_examples": [
+    {
+     "marker": "器之、龐安常、郭白云",
+     "segment": "三先生常氏之書世無傳本",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "因出醫書歷書數帙曰。",
+     "segment": "此先生所著也予於二家之學皆所未習不能有以",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "則皆驚喜曰。",
+     "segment": "此奇書也蓋其說雖若一出古經而無所益損然古",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒九十論",
+   "book": "傷寒九十論",
+   "author": "許叔微",
+   "dynasty": "宋",
+   "layer": "P",
+   "n_paragraphs": 287,
+   "n_edges": 135,
+   "n_marker_unresolved": 253,
+   "unresolved_examples": [
+    {
+     "marker": "采芍藥以利劑。一醫曰。",
+     "segment": "此赤芍藥耳安可用也予曰此正當用再啜而微汗",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "藥耳。安可用也。予曰。",
+     "segment": "此正當用再啜而微汗解",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "論曰。",
+     "segment": "仲景桂枝加減法十有九證但云芍藥聖惠方皆稱",
+     "shanghan_hint": true
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒來蘇集",
+   "book": "傷寒來蘇集",
+   "author": "柯琴",
+   "dynasty": "清",
+   "layer": "C",
+   "n_paragraphs": 534,
+   "n_edges": 858,
+   "n_marker_unresolved": 79,
+   "unresolved_examples": [
+    {
+     "marker": "分營衛經絡，按本論云，",
+     "segment": "太陽病或未發熱或已發熱已發熱即是發熱惡寒",
+     "shanghan_hint": true
+    },
+    {
+     "marker": "成之數而愈耶，內經曰，",
+     "segment": "其死多以六七日之間其愈皆以十日以上使死期",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "則三陰受邪氣，岐伯曰，",
+     "segment": "中於陰者從臂胻始故三陰各自受寒邪不必陽經",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒六書",
+   "book": "傷寒六書",
+   "author": "陶華",
+   "dynasty": "明",
+   "layer": "P",
+   "n_paragraphs": 1037,
+   "n_edges": 360,
+   "n_marker_unresolved": 124,
+   "unresolved_examples": [
+    {
+     "marker": "可以傷生滅性。孟子云：",
+     "segment": "不孝有三無後為大有子多病不傳以濟生之道一",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "日進高遠。司馬溫公曰，",
+     "segment": "達則為良相不達則為良醫豈非君子之道乎汝宜",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "因出示諸書，曰郭白云",
+     "segment": "傷寒補亡龐安常卒病論韓和微旨楊仁齋傷寒類",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒大白",
+   "book": "傷寒大白",
+   "author": "高世栻",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 1475,
+   "n_edges": 910,
+   "n_marker_unresolved": 107,
+   "unresolved_examples": [
+    {
+     "marker": "居輦轂下。四方醫士云",
+     "segment": "集京邸因聞天下明醫出在松江然多高隱未得來",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "卯春遷任吳閶，得見云",
+     "segment": "間秦子皇士之書名曰症因脈治施子宇瞻昆季所",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "間秦子皇士之書，名曰：",
+     "segment": "症因脈治施子宇瞻昆季所刻也症分外感內傷治",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒審證表",
+   "book": "傷寒審證表",
+   "author": "",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 161,
+   "n_edges": 561,
+   "n_marker_unresolved": 3,
+   "unresolved_examples": [
+    {
+     "marker": "渴欲飲水水入則吐名曰",
+     "segment": "水逆五苓證入太陰去路傷寒汗出而渴者五苓散",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "溫兩腳當伸何以知此曰",
+     "segment": "寸口脈浮而大浮則為風大則為虛風則生微熱虛",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "外症）惡寒何故自罷曰",
+     "segment": "陽明居中土無所復傳始雖惡寒二日自止也陽明",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒尋源",
+   "book": "傷寒尋源",
+   "author": "呂震名",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 877,
+   "n_edges": 1063,
+   "n_marker_unresolved": 102,
+   "unresolved_examples": [
+    {
+     "marker": "於無稽。仲景自序有云。",
+     "segment": "若能尋余所集雖不能盡愈諸病庶可以見病知源",
+     "shanghan_hint": true
+    },
+    {
+     "marker": "見病知源。爰名是編曰",
+     "segment": "傷寒尋源俾及門諸子得藉是以為讀仲景書之津",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "而作傷寒論。考難經云。",
+     "segment": "傷寒有五一曰中風二曰傷寒三曰濕溫四曰溫病",
+     "shanghan_hint": true
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒心要_1",
+   "book": "傷寒心要",
+   "author": "劉完素",
+   "dynasty": "金",
+   "layer": "P",
+   "n_paragraphs": 121,
+   "n_edges": 0,
+   "n_marker_unresolved": 6,
+   "unresolved_examples": [
+    {
+     "marker": "解以白虎湯。（直格云：",
+     "segment": "夏至前為濕夏至後為暑是以至後不用白虎宜乎",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "用白虎。宜乎？局方云：",
+     "segment": "立秋後不用白虎子和云若有白虎證亦不用乎卻",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "秋後不用白虎。子和云：",
+     "segment": "若有白虎證亦不用乎卻用詳審之耳",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒心鏡別集",
+   "book": "傷寒心鏡別集",
+   "author": "張從正",
+   "dynasty": "金",
+   "layer": "P",
+   "n_paragraphs": 8,
+   "n_edges": 1,
+   "n_marker_unresolved": 5,
+   "unresolved_examples": [
+    {
+     "marker": "發表不遠熱。啟玄子云：",
+     "segment": "世人直疑攻裏合用寒藥發表合用熱藥似是而非",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "其人必讝語，妄言經曰",
+     "segment": "肺熱必為讝語兼上焦有病肺必主之手經者上焦",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "不觀內經陰陽雜合論云：",
+     "segment": "太陽根於至陰名陰中之陽少陽根起於竅陰名陰",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒恆論",
+   "book": "傷寒恆論",
+   "author": "",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 1750,
+   "n_edges": 1302,
+   "n_marker_unresolved": 195,
+   "unresolved_examples": [
+    {
+     "marker": "書，相傳千餘年，俱云",
+     "segment": "仲景原文名賢迭出注家亦多不勝枚舉余閱原文",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "，逐條發明，雖不敢云",
+     "segment": "高出手眼此亦救世之本心聊以補名賢之不逮亦",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "論曰：",
+     "segment": "余每覽越人入虢之診望齊侯之色未嘗不慨然歎",
+     "shanghan_hint": true
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒懸解",
+   "book": "傷寒懸解",
+   "author": "黃元御",
+   "dynasty": "清",
+   "layer": "C",
+   "n_paragraphs": 957,
+   "n_edges": 889,
+   "n_marker_unresolved": 74,
+   "unresolved_examples": [
+    {
+     "marker": "病入陰臟則為寒（名曰",
+     "segment": "病入實裡氣之自病也其視溫病之表裡皆熱者亦",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "於陽明陰莫盛於少陰曰",
+     "segment": "陽明之為病是少陰之水負而趺陽土盛者也曰少",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "水負而趺陽土盛者也曰",
+     "segment": "少陰之為病是趺陽土負而少陰水勝者也土勝水",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒括要",
+   "book": "傷寒括要",
+   "author": "李中梓",
+   "dynasty": "明",
+   "layer": "P",
+   "n_paragraphs": 809,
+   "n_edges": 379,
+   "n_marker_unresolved": 129,
+   "unresolved_examples": [
+    {
+     "marker": "。而竟無漏義矣。顏曰",
+     "segment": "括要謂括義詳而征詞簡也及門之能諳其義而噓",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "一仲景傷寒論例。凡曰",
+     "segment": "太陽病者皆謂脈浮惡寒頭項強痛也凡曰陽明病",
+     "shanghan_hint": true
+    },
+    {
+     "marker": "寒。頭項強痛也。凡曰",
+     "segment": "陽明病者皆謂胃家實也皆謂脈微細但欲寐也凡",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒指掌",
+   "book": "傷寒指掌",
+   "author": "吳坤安",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 2075,
+   "n_edges": 300,
+   "n_marker_unresolved": 64,
+   "unresolved_examples": [
+    {
+     "marker": "所著書為四卷。名之曰",
+     "segment": "傷寒指掌北來就正於余並囑序余讀其自序觀其",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "暑疫。皆熱病也。其云",
+     "segment": "傷寒自表達裡溫熱自內發外溫病發於少陽熱病",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "精義。無不畢備。其云",
+     "segment": "仲景傷寒先分六經河間溫熱須究三焦此即先生",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒捷訣",
+   "book": "傷寒捷訣",
+   "author": "嚴則庵 裘慶元",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 251,
+   "n_edges": 29,
+   "n_marker_unresolved": 38,
+   "unresolved_examples": [
+    {
+     "marker": "間以傷寒為熱病。經曰。",
+     "segment": "熱病者皆傷寒之類是也東垣以內傷寒悉類傷寒",
+     "shanghan_hint": true
+    },
+    {
+     "marker": "寒。而丹溪之書。則云",
+     "segment": "傷寒屬內傷寒者十居八九是皆殊途而同歸百慮",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "明。不毋小補於萬一云",
+     "segment": "爾讀注全集更有深心知者鑒之",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒明理論",
+   "book": "傷寒明理論",
+   "author": "成無己",
+   "dynasty": "宋",
+   "layer": "P",
+   "n_paragraphs": 350,
+   "n_edges": 417,
+   "n_marker_unresolved": 160,
+   "unresolved_examples": [
+    {
+     "marker": "起死。祛邪愈疾。非曰",
+     "segment": "生而知之必也祖述前聖之經才高識妙探微索隱",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "凡五十篇。目之曰",
+     "segment": "明理論所謂真得長沙公之旨趣也使習醫之流讀",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "下利發熱亦死。內經云。",
+     "segment": "汗出輒復熱而脈躁疾不為汗衰狂言不能食此名",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒明理論_1",
+   "book": "傷寒明理論",
+   "author": "成無己",
+   "dynasty": "金",
+   "layer": "P",
+   "n_paragraphs": 132,
+   "n_edges": 387,
+   "n_marker_unresolved": 158,
+   "unresolved_examples": [
+    {
+     "marker": "下利發熱亦死，內經云，",
+     "segment": "汗出輒復熱而脈躁疾不為汗衰狂言不能食此名",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "，而轉行於背，內經曰，",
+     "segment": "人身之陰陽者背為陽腹為陰陽氣不足陰寒氣盛",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "，故於\n少陰病，則曰",
+     "segment": "口中潤如陽氣內陷則熱爍津液為乾故於太陽病",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒標本心法類萃",
+   "book": "傷寒標本心法類萃",
+   "author": "劉完素",
+   "dynasty": "金",
+   "layer": "P",
+   "n_paragraphs": 270,
+   "n_edges": 18,
+   "n_marker_unresolved": 5,
+   "unresolved_examples": [
+    {
+     "marker": "遲，或帶緊者，無汗曰",
+     "segment": "剛有汗曰柔通宜三一承氣湯十三合解毒二十一",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "，無汗曰剛　；有汗曰",
+     "segment": "柔通宜三一承氣湯十三合解毒二十一下之",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "而渴者，飲水反吐名曰",
+     "segment": "水逆俱宜五苓散二十四少陰病二三日口燥咽乾",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒標本心法類萃_1",
+   "book": "傷寒標本心法類萃",
+   "author": "劉完素",
+   "dynasty": "金",
+   "layer": "P",
+   "n_paragraphs": 193,
+   "n_edges": 20,
+   "n_marker_unresolved": 6,
+   "unresolved_examples": [
+    {
+     "marker": "而遲或帶緊者，無汗曰",
+     "segment": "剛痓有汗曰柔痓通宜三乙承氣湯合解毒下之",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "，無汗曰剛痓，有汗曰",
+     "segment": "柔痓通宜三乙承氣湯合解毒下之",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "渴者，飲水反吐，名曰",
+     "segment": "水逆俱宜五苓散少陰病二三日口燥咽乾三乙承",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒法祖",
+   "book": "傷寒法祖",
+   "author": "任越庵",
+   "dynasty": "宋",
+   "layer": "P",
+   "n_paragraphs": 309,
+   "n_edges": 249,
+   "n_marker_unresolved": 62,
+   "unresolved_examples": [
+    {
+     "marker": "獨於太陽篇。別其名曰",
+     "segment": "傷寒曰中風曰中暑曰濕痹曰溫病而他經不復分",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "。此類姑不悉辨。其云",
+     "segment": "大法春夏宜發汗冬宜吐秋宜下設未值其時當汗",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "。悉本內經。按岐伯曰。",
+     "segment": "調治之方必別陰陽陽病治陰陰病治陽定其中外",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒溯源集",
+   "book": "傷寒溯源集",
+   "author": "錢潢",
+   "dynasty": "清",
+   "layer": "C",
+   "n_paragraphs": 3324,
+   "n_edges": 2125,
+   "n_marker_unresolved": 737,
+   "unresolved_examples": [
+    {
+     "marker": "生人之柄者三。曰君曰",
+     "segment": "相曰醫夫君相調陰陽御六氣噓為雨露噫為雷霆",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "之柄者三。曰君曰相曰",
+     "segment": "醫夫君相調陰陽御六氣噓為雨露噫為雷霆",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "。矢愿活千人。既而曰",
+     "segment": "吾老矣愿不易盈也其著書乎於是以素問為經以",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒發微論",
+   "book": "傷寒發微論",
+   "author": "許叔微",
+   "dynasty": "宋",
+   "layer": "P",
+   "n_paragraphs": 152,
+   "n_edges": 86,
+   "n_marker_unresolved": 69,
+   "unresolved_examples": [
+    {
+     "marker": "卷。發微論二卷。題曰",
+     "segment": "白沙許叔微知可述直齋書錄解題云許叔微傷寒",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "可述。直齋書錄解題云。",
+     "segment": "許叔微傷寒歌三卷凡百篇皆本仲景注又有治法",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "四庫提要云。",
+     "segment": "叔微字知可真州人紹興二年進士醫家謂之許學",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒百證歌",
+   "book": "傷寒百證歌",
+   "author": "許叔微",
+   "dynasty": "宋",
+   "layer": "P",
+   "n_paragraphs": 291,
+   "n_edges": 478,
+   "n_marker_unresolved": 185,
+   "unresolved_examples": [
+    {
+     "marker": "此四者為急。仲景云。",
+     "segment": "浮為在表沉為在裡然表證有虛有實浮而有力者",
+     "shanghan_hint": true
+    },
+    {
+     "marker": "之脈亦如然。（仲景云。",
+     "segment": "風則虛浮寒則牢堅沉潛水支飲急弦動則為痛數",
+     "shanghan_hint": true
+    },
+    {
+     "marker": "曰遲。緩遲相搏。名曰",
+     "segment": "沉大抵仲景脈法論傷寒與雜病脈法異故予嘗撰",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒直格",
+   "book": "傷寒直格",
+   "author": "",
+   "dynasty": "金",
+   "layer": "P",
+   "n_paragraphs": 477,
+   "n_edges": 39,
+   "n_marker_unresolved": 114,
+   "unresolved_examples": [
+    {
+     "marker": "陰陽之理，比嘗語予曰：",
+     "segment": "傷寒謂之大病者死生在六七日之間經曰人之傷",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "在六、七日之間。經曰：",
+     "segment": "人之傷於寒也則為病熱古今亦通謂之傷寒熱病",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "可不知也。予語守真曰：",
+     "segment": "先生之論如此何不辟此說以暴耀當世以革醫流",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒直格_1",
+   "book": "傷寒直格",
+   "author": "劉完素",
+   "dynasty": "金",
+   "layer": "P",
+   "n_paragraphs": 514,
+   "n_edges": 38,
+   "n_marker_unresolved": 109,
+   "unresolved_examples": [
+    {
+     "marker": "陰陽之理，比嘗語予曰：",
+     "segment": "傷寒謂之大病者死生在六七日之間經日人之傷",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "可不知也。予語守真曰：",
+     "segment": "先生之論如此何不闢此說以暴耀當世以革醫流",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "忍而無言何邪，守真曰：",
+     "segment": "世之所集各異人情喜溫而惡寒恐論者不詳反生",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒總病論",
+   "book": "傷寒總病論",
+   "author": "龐安石",
+   "dynasty": "宋",
+   "layer": "P",
+   "n_paragraphs": 1577,
+   "n_edges": 367,
+   "n_marker_unresolved": 111,
+   "unresolved_examples": [
+    {
+     "marker": "龐曰：",
+     "segment": "素問云冬三月是謂閉藏水冰地裂無擾乎陽又云",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "，肌膚熱而惡寒，名曰",
+     "segment": "傷寒其不即時成病則寒毒藏於肌膚之間至春夏",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "。因春溫氣而變，名曰",
+     "segment": "溫病也因夏暑氣而變名曰熱病也因八節虛風而",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒總病論_1",
+   "book": "傷寒總病論",
+   "author": "龐安石",
+   "dynasty": "宋",
+   "layer": "P",
+   "n_paragraphs": 336,
+   "n_edges": 331,
+   "n_marker_unresolved": 123,
+   "unresolved_examples": [
+    {
+     "marker": "龐曰，",
+     "segment": "素問云冬三月是謂閉藏水冰也地裂無擾乎陽又",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "，肌膚熱而惡寒，名曰",
+     "segment": "傷寒其不即時成病則寒毒藏於肌膚之間至春夏",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "因春溫氣而變，名曰",
+     "segment": "溫病也因夏暑氣而變名曰熱病也因八節虛風而",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒纘論",
+   "book": "傷寒纘論",
+   "author": "張璐",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 1626,
+   "n_edges": 1607,
+   "n_marker_unresolved": 120,
+   "unresolved_examples": [
+    {
+     "marker": "善醫或勸其著書胤宗曰",
+     "segment": "醫此意也吾意所解口不能宣也今張子以三十年",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "風屬陽從衛而入。經云",
+     "segment": "陽者衛外而為故也今衛疏故自汗出而脈緩",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "池風府之意。○內經云。",
+     "segment": "有病汗出而身熱者風也汗出而煩滿不解者厥也",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒纘論_傷寒緒論",
+   "book": "傷寒纘論·傷寒緒論",
+   "author": "張璐",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 2005,
+   "n_edges": 1920,
+   "n_marker_unresolved": 279,
+   "unresolved_examples": [
+    {
+     "marker": "風屬陽從衛而，入經云：",
+     "segment": "陽者衛外而為固也今衛疎故自汗出而脈緩",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "池風府之意。\n內經云：",
+     "segment": "有病汗出而身熱者風也汗出而煩滿不解者厥也",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "，止分皮膚骨髓而不曰",
+     "segment": "表裏者蓋以皮肉脈筋骨五者主於外而充於身者",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒舌鑑",
+   "book": "傷寒舌鑑",
+   "author": "張登",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 270,
+   "n_edges": 4,
+   "n_marker_unresolved": 1,
+   "unresolved_examples": [
+    {
+     "marker": "共得一百二十圖。命曰",
+     "segment": "傷寒舌鑒授之剞劂以公同志臨證之一助云",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒補例",
+   "book": "傷寒補例",
+   "author": "周學海",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 144,
+   "n_edges": 20,
+   "n_marker_unresolved": 37,
+   "unresolved_examples": [
+    {
+     "marker": "違眾論。但曲為之說曰。",
+     "segment": "是傷寒雜證也夫傷寒之證自雜安得復有傷寒雜",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "拾遺發覆之一端。名曰",
+     "segment": "傷寒補例不敢補仲景也補叔和云爾",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "即如每節首署太陽病云",
+     "segment": "云有直指發熱惡寒項背強痛者有謂先見太陽病",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒論條辨",
+   "book": "傷寒論條辨",
+   "author": "方有執",
+   "dynasty": "明",
+   "layer": "C",
+   "n_paragraphs": 2529,
+   "n_edges": 1506,
+   "n_marker_unresolved": 348,
+   "unresolved_examples": [
+    {
+     "marker": "舜。孔子之贊堯。則曰",
+     "segment": "巍巍乎惟天為大惟堯則之",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "。子貢之贊孔子。則曰",
+     "segment": "夫子之不可及也猶天之不可階而升也然則聖人",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "以風為首論者。即素曰",
+     "segment": "風為首百病之長之意也其推而至於壞病不以病",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒論條辨_1",
+   "book": "傷寒論條辨",
+   "author": "方有執",
+   "dynasty": "明",
+   "layer": "P",
+   "n_paragraphs": 138,
+   "n_edges": 739,
+   "n_marker_unresolved": 340,
+   "unresolved_examples": [
+    {
+     "marker": "諸家方書之所謂中風云",
+     "segment": "者義不相同諸家方書之所謂中風蓋素問曰陽之",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "但以其所謂者為中風云",
+     "segment": "耳其於在此之所謂中風云者則無聞焉二義辨論",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "於在此之所謂\n中風云",
+     "segment": "者則無聞焉二義辨論精切詳悉分曉惟有此書自",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒論注",
+   "book": "傷寒論注",
+   "author": "柯琴",
+   "dynasty": "清",
+   "layer": "C",
+   "n_paragraphs": 1334,
+   "n_edges": 1067,
+   "n_marker_unresolved": 67,
+   "unresolved_examples": [
+    {
+     "marker": "當用麻黃解表。夫既云",
+     "segment": "衄乃解又云自衄者愈何得陣後興兵衄家不可發",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "按本論云：",
+     "segment": "太陽病或未發熱或已發熱已發熱即是發熱惡寒",
+     "shanghan_hint": true
+    },
+    {
+     "marker": "非傳經之日也。岐伯曰：",
+     "segment": "邪中於面則下陽明中於項則下太陽中於頰則下",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒論綱目",
+   "book": "傷寒論綱目",
+   "author": "沈金鰲",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 4414,
+   "n_edges": 3861,
+   "n_marker_unresolved": 1665,
+   "unresolved_examples": [
+    {
+     "marker": "斃者乎。乃猶語於人曰。",
+     "segment": "吾固用仲景法其如病之不治何夫不知病之所犯",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "、虛實之何若。而但云",
+     "segment": "用仲景法其曷有濟乃又詭言仲景但知治外感不",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "鰲按。仲景自序云。",
+     "segment": "著傷寒雜病論十六卷仲景原書固合傷寒雜病而",
+     "shanghan_hint": true
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒論翼",
+   "book": "傷寒論翼",
+   "author": "柯琴",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 162,
+   "n_edges": 218,
+   "n_marker_unresolved": 53,
+   "unresolved_examples": [
+    {
+     "marker": "理，敢略陳固陋，名曰",
+     "segment": "傷寒論翼不兼雜病者恐人未知原文合論之旨以",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "獨於太陽篇，別其名曰",
+     "segment": "傷寒曰中風曰中暑曰溫病曰濕痹而他經不復分",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "？此類姑不悉辨。其云",
+     "segment": "大法春夏宜發汗春宜吐秋宜下設未值其時當汗",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒論輯義",
+   "book": "傷寒論輯義",
+   "author": "丹波元珍",
+   "dynasty": "日本",
+   "layer": "C",
+   "n_paragraphs": 3492,
+   "n_edges": 2475,
+   "n_marker_unresolved": 1280,
+   "unresolved_examples": [
+    {
+     "marker": "許叔微曰。",
+     "segment": "讀仲景論不能博通諸醫書以發明其隱奧專守一",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "不憂也。凡七卷。名曰",
+     "segment": "傷寒論輯義昔人云易稿則技精屢利則藝進是書",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "曰傷寒論輯義。昔人云。",
+     "segment": "易稿則技精屢利則藝進是書之成但恐決擇未精",
+     "shanghan_hint": true
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒論辯證廣注",
+   "book": "傷寒論辯證廣注",
+   "author": "汪琥",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 2706,
+   "n_edges": 1969,
+   "n_marker_unresolved": 1205,
+   "unresolved_examples": [
+    {
+     "marker": "未發者。曷可少哉其曰",
+     "segment": "傷寒非寒者蓋寒病則治以熱劑熱病則治以涼劑",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "與熱證迥異。則名之曰",
+     "segment": "真寒而別為編",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "日既成傷寒論。亦自云",
+     "segment": "述不敢云作則知仲景之論實宗內經之旨也",
+     "shanghan_hint": true
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒論類方",
+   "book": "傷寒論類方",
+   "author": "徐靈胎",
+   "dynasty": "清",
+   "layer": "D",
+   "n_paragraphs": 684,
+   "n_edges": 858,
+   "n_marker_unresolved": 21,
+   "unresolved_examples": [
+    {
+     "marker": "去渣，溫服六合。一云：",
+     "segment": "桂枝湯三合麻黃湯三合並為六合頓服將息如上",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "一升，日再服。一本云：",
+     "segment": "桂枝湯二升麻黃湯一升合為三升分再服今合為",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "，其現症亦同，但彼云：",
+     "segment": "反汗出故無麻黃此云無汗故加麻黃也",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒論類方_1",
+   "book": "傷寒論類方",
+   "author": "徐大椿",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 278,
+   "n_edges": 668,
+   "n_marker_unresolved": 41,
+   "unresolved_examples": [
+    {
+     "marker": "救誤之書也，其自序云，",
+     "segment": "傷夭橫之莫救所以尋求古訓轉採眾方蓋因誤治",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "故須助以熱粥，內經云，",
+     "segment": "穀入於胃以傳於肺肺主皮毛汗所從出歠粥充胃",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "去滓，溫服六合，一云",
+     "segment": "桂枝湯三合麻黃湯三合頓服將息如上法太陽病",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒貫珠集",
+   "book": "傷寒貫珠集",
+   "author": "尤怡",
+   "dynasty": "清",
+   "layer": "C",
+   "n_paragraphs": 1503,
+   "n_edges": 1348,
+   "n_marker_unresolved": 83,
+   "unresolved_examples": [
+    {
+     "marker": "。仲景首定太陽脈證曰",
+     "segment": "脈浮頭項強痛惡寒蓋太陽居三陽之表而其脈上",
+     "shanghan_hint": true
+    },
+    {
+     "marker": "乃並傷於營耳。郭白云",
+     "segment": "所謂涉衛中營者是也是以寒之淺者僅傷於衛風",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "且無汗為表實。何云",
+     "segment": "衛虛麻黃之去實寧獨遺衛能不膠於俗說者斯為",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒貫珠集_1",
+   "book": "傷寒貫珠集",
+   "author": "尤怡",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 585,
+   "n_edges": 1435,
+   "n_marker_unresolved": 81,
+   "unresolved_examples": [
+    {
+     "marker": "仲景\n首定太陽脈證曰，",
+     "segment": "脈浮頭項強痛惡寒蓋太陽居三陽之表而其脈上",
+     "shanghan_hint": true
+    },
+    {
+     "marker": "，且無汗為表實，何云",
+     "segment": "衛虛麻黃之去實寧獨遺衛能不膠于俗說者斯為",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "喜甘故也。\n 本草云，",
+     "segment": "酒性熱而善上又忌諸甜物飲酒之人甘味積中而",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒辨要箋記",
+   "book": "傷寒辨要箋記",
+   "author": "程門雪",
+   "dynasty": "民國",
+   "layer": "P",
+   "n_paragraphs": 82,
+   "n_edges": 17,
+   "n_marker_unresolved": 36,
+   "unresolved_examples": [
+    {
+     "marker": "徐洄溪曰：",
+     "segment": "欲讀傷寒論必先識六經之本證然後論中所言源",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "物茂仰曰：",
+     "segment": "三陽三陰陽明厥陰之說與易之老陽老陰有別蓋",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "賀屋恭曰：",
+     "segment": "史遷所記既有六經之目而與本書所設三陰三陽",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒醫訣串解",
+   "book": "傷寒醫訣串解",
+   "author": "陳念祖",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 258,
+   "n_edges": 375,
+   "n_marker_unresolved": 98,
+   "unresolved_examples": [
+    {
+     "marker": "。復為綜貫衍繹。名曰",
+     "segment": "傷寒醫訣串解其於疑似細微之處抉剔詳辨頗費",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "飲水。水入即吐。名曰",
+     "segment": "水逆宜五苓散汗後心下痞硬干噫食臭脅下有水",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "內經云。",
+     "segment": "太陽之上寒氣治之所謂本也本之下中之見也見",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "傷寒附翼",
+   "book": "傷寒附翼",
+   "author": "柯琴",
+   "dynasty": "清",
+   "layer": "P",
+   "n_paragraphs": 229,
+   "n_edges": 178,
+   "n_marker_unresolved": 47,
+   "unresolved_examples": [
+    {
+     "marker": "仍當用此解肌。如所云",
+     "segment": "頭痛發熱惡寒惡風鼻鳴乾嘔等病但見一症即是",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "黃乃上升之品，夫既云",
+     "segment": "衄乃解又云自衄者愈若復用升提之藥衄流不止",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "液，令渴不解乎？且云",
+     "segment": "服藥已服藥已者是何藥何湯耶觀仲景於所服藥",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "劉河間傷寒醫鑑",
+   "book": "劉河間傷寒醫鑑",
+   "author": "馬宗素",
+   "dynasty": "元",
+   "layer": "P",
+   "n_paragraphs": 26,
+   "n_edges": 25,
+   "n_marker_unresolved": 45,
+   "unresolved_examples": [
+    {
+     "marker": "生民之壽域，是以名曰",
+     "segment": "素問於是守真劉先生恐斯文將墜於地民罹橫夭",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "論運化之盛衰，目之曰",
+     "segment": "要旨論一部計三萬六千七百五十三字一者分君",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "守真曰：",
+     "segment": "自昔以來惟仲景著述遺文立傷寒九十七法合一",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "張卿子傷寒論",
+   "book": "張卿子傷寒論",
+   "author": "張卿子",
+   "dynasty": "清",
+   "layer": "C",
+   "n_paragraphs": 2603,
+   "n_edges": 2651,
+   "n_marker_unresolved": 615,
+   "unresolved_examples": [
+    {
+     "marker": "晉皇甫謐序甲乙針經云。",
+     "segment": "伊芳尹以元聖之才撰用神農本草以為湯液漢張",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "漢書無傳。見名醫錄云。",
+     "segment": "南陽人名機仲景乃其字也舉孝廉官至長沙太守",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "論曰。",
+     "segment": "余每覽越人入虢之診望齊侯之色未嘗不慨然嘆",
+     "shanghan_hint": true
+    }
+   ]
+  },
+  {
+   "book_dir": "敖氏傷寒金鏡錄",
+   "book": "敖氏傷寒金鏡錄",
+   "author": "杜本",
+   "dynasty": "元",
+   "layer": "P",
+   "n_paragraphs": 301,
+   "n_edges": 30,
+   "n_marker_unresolved": 29,
+   "unresolved_examples": [
+    {
+     "marker": "為寒者訛矣。仲景法曰：",
+     "segment": "少陰病下利清穀色青者熱在裡也大承氣湯下之",
+     "shanghan_hint": true
+    },
+    {
+     "marker": "【介按】程應旄曰。",
+     "segment": "方以柴胡疏木使半表之邪得從外宣黃芩清火使",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "清膈熱之良劑。汪昂云。",
+     "segment": "熱淫於內治以鹹寒",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "河間傷寒心要",
+   "book": "河間傷寒心要",
+   "author": "鎦洪",
+   "dynasty": "金",
+   "layer": "P",
+   "n_paragraphs": 91,
+   "n_edges": 0,
+   "n_marker_unresolved": 3,
+   "unresolved_examples": [
+    {
+     "marker": "秋後不用白虎。子和云：",
+     "segment": "若有白虎證亦不用乎卻用詳審之耳白虎解後以",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "再解之。又按，余論云：",
+     "segment": "傷寒下後自汗虛熱不已白虎加蒼朮人參一服如",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "膈、解毒調之。）經云",
+     "segment": "三下而熱不退者即死後人有四五次下以至十數",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "註解傷寒論",
+   "book": "註解傷寒論",
+   "author": "成無己",
+   "dynasty": "金",
+   "layer": "C",
+   "n_paragraphs": 1861,
+   "n_edges": 2376,
+   "n_marker_unresolved": 114,
+   "unresolved_examples": [
+    {
+     "marker": "論曰：",
+     "segment": "余每覽越人入虢之診望齊侯之色未嘗不慨然嘆",
+     "shanghan_hint": true
+    },
+    {
+     "marker": "是輕生，彼何榮勢之云",
+     "segment": "哉而進不能愛人知人退不能愛身知己遇災值禍",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "孔子云，",
+     "segment": "生而知之者上學則亞之多聞博淺知之次也余宿",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "曹氏傷寒金匱發微合刊",
+   "book": "曹氏傷寒金匱發微合刊",
+   "author": "曹穎甫",
+   "dynasty": "民國",
+   "layer": "P",
+   "n_paragraphs": 2030,
+   "n_edges": 1401,
+   "n_marker_unresolved": 248,
+   "unresolved_examples": [
+    {
+     "marker": "日。則發於陽者。當云",
+     "segment": "六日愈後文又云太陽病至七日以上自愈者以行",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "候。則發於陰者。當云",
+     "segment": "七日愈但陽病遇陰數而愈陰病遇陽數而愈亦屬",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "。值天陰雨不止。醫云。",
+     "segment": "此可發其汗汗之病不愈者但風氣去濕氣在故不",
+     "shanghan_hint": false
+    }
+   ]
+  },
+  {
+   "book_dir": "經方實驗錄",
+   "book": "經方實驗錄",
+   "author": "曹穎甫",
+   "dynasty": "民國",
+   "layer": "P",
+   "n_paragraphs": 698,
+   "n_edges": 164,
+   "n_marker_unresolved": 375,
+   "unresolved_examples": [
+    {
+     "marker": "病乃告痊。雲泉之言曰：",
+     "segment": "今年太歲在辰為濕土司天又當長夏之令暴日陰",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "先生來同寓，診予脈曰：",
+     "segment": "病當速愈但累經發汗津液已耗因向藥肆中購荷",
+     "shanghan_hint": false
+    },
+    {
+     "marker": "易衣被，問其方？則曰：",
+     "segment": "桂枝白虎湯也予至是全體舒暢呼粥盡二碗安眠",
+     "shanghan_hint": false
+    }
+   ]
+  }
+ ]
+}
