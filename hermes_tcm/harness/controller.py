@@ -64,7 +64,11 @@ def classify_task(query: str) -> str:
     for task_type, cues in _TASK_RULES:
         if any(c in q for c in cues):
             return task_type
-    return "general_search"
+    # general_search 兜底前先過 DomainRouter：任務類型 × 領域包是兩個
+    # 正交維度——「桂枝湯的核心方證」應路由到 formula_pattern（領域
+    # 工具優先），而不是只走全庫檢索
+    from .router import refine_general_task
+    return refine_general_task(q)
 
 
 def extract_topic(query: str) -> str:
@@ -264,6 +268,12 @@ class ResearchRunController:
             # 終態不可復活/改寫：completed/blocked/rejected/cancelled 的
             # approve/reject 一律 no-op 返回持久化狀態
             return row
+        # council run 的審批續跑未接入合議重跑：execute() 會以 single
+        # 模式 DAG 重跑並覆蓋合議結果——如實拒絕，返回持久化狀態
+        if (row.get("spec") or {}).get("execution_mode") == "council":
+            self.store.append_event(run_id, "council_resume_unsupported",
+                                    {"approve": approve, "reject": reject})
+            return row
         state = row["state"]
         version = row["state_version"]
         if row["status"] != "paused" and not (approve or reject):
@@ -360,11 +370,16 @@ class ResearchRunController:
     def _n_task_classify(self, ctx: "_RunContext") -> Dict:
         q = ctx.outputs["intake"]["sanitized_query"]
         task_type = ctx.spec.task_type or classify_task(q)
+        from .router import route
+        routing = route(q, task_type)
         topic = extract_topic(q)
         from hermes_shanghan.textutil import fold_variants
         forms = list(dict.fromkeys([topic, fold_variants(topic)]))
         return {"task_type": task_type, "topic": topic,
-                "query_forms": [f for f in forms if f]}
+                "query_forms": [f for f in forms if f],
+                "entities": routing["entities"],
+                "domains": routing["domains"],
+                "retrieval_strategy": routing["retrieval_strategy"]}
 
     def _n_scope_contract(self, ctx: "_RunContext") -> Dict:
         return {"corpus_scope": ctx.spec.corpus_scope.to_dict(),
@@ -392,6 +407,18 @@ class ResearchRunController:
             "broad_consensus": [
                 {"step": "search", "tool": "text.search_passages"},
                 {"step": "counter", "tool": "text.search_passages"}],
+            # 領域任務：專屬工具優先，全庫旁證補充（domain_first_then_library）
+            "formula_pattern": [
+                {"step": "resolve", "tool": "formula.resolve"},
+                {"step": "library_corroborate",
+                 "tool": "text.search_passages"}],
+            "herb_profile": [
+                {"step": "resolve", "tool": "herb.resolve"},
+                {"step": "trace", "tool": "herb.trace_name"}],
+            "case_study": [
+                {"step": "cases", "tool": "case.search"},
+                {"step": "library_corroborate",
+                 "tool": "text.search_passages"}],
         }
         steps = plans.get(task_type,
                           [{"step": "search",
@@ -420,6 +447,9 @@ class ResearchRunController:
         tc = ctx.outputs["task_classify"]
         task_type, topic = tc["task_type"], tc["topic"]
         forms = tc["query_forms"]
+        entities = tc.get("entities") or []
+        formula_ent = next((e["name"] for e in entities
+                            if e.get("type") == "formula"), "")
         calls: List[Dict] = []
         if task_type == "earliest_attestation":
             calls.append(("citation.trace_quote", {"quote": topic}))
@@ -431,7 +461,25 @@ class ResearchRunController:
             calls.append(("collation.align_witnesses",
                           {"work": topic, "query": topic}))
         elif task_type == "formula_lineage":
-            calls.append(("formula.trace_lineage", {"formula": topic}))
+            calls.append(("formula.trace_lineage",
+                          {"formula": formula_ent or topic}))
+        elif task_type == "formula_pattern":
+            # 領域工具優先，全庫時間有序旁證補充
+            calls.append(("formula.resolve",
+                          {"formula": formula_ent or topic}))
+            calls.append(("text.search_passages",
+                          {"query": formula_ent or topic,
+                           "order": "dynasty"}))
+        elif task_type == "herb_profile":
+            calls.append(("herb.resolve", {"herb": topic}))
+            calls.append(("herb.trace_name", {"herb": topic}))
+        elif task_type == "case_study":
+            calls.append(("case.search",
+                          {"formula": formula_ent} if formula_ent
+                          else {"keyword": topic}))
+            calls.append(("text.search_passages",
+                          {"query": formula_ent or topic,
+                           "order": "dynasty"}))
         else:
             calls.append(("text.search_passages",
                           {"query": topic, "order": "dynasty"}))

@@ -36,9 +36,19 @@ from .registry import ToolNamespaceRegistry
 
 MAX_RESULT_BYTES = 262_144
 
+# 超時線程熔斷（P0：thread.join(timeout) 只是不再等待，工具線程本身
+# 無法被強制終止——滯留線程達到上限即熔斷新調用，防資源泄漏擴大）
+MAX_ZOMBIE_THREADS = 4
+_ZOMBIE_THREADS: List[threading.Thread] = []
+_ZOMBIE_LOCK = threading.Lock()
+
 
 class BrokerTimeout(Exception):
     pass
+
+
+class BrokerCircuitOpen(Exception):
+    """超時滯留線程達到上限，熔斷新調用（等待滯留線程結束）。"""
 
 
 class CapabilityBroker:
@@ -156,15 +166,34 @@ class CapabilityBroker:
         if cached is not None and contract.cacheable:
             out = copy.deepcopy(cached)
             out["cache_hit"] = True
-            self._register_evidence(resolved, span_id, out, arguments,
-                                    node_id)
+            n_ev = self._register_evidence(resolved, span_id, out,
+                                           arguments, node_id)
+            self._check_evidence_contract(contract, resolved, n_ev)
             return _finish(out, cache_hit=True)
 
-        # 7. 超時執行
+        # 7. 超時執行（熔斷保護：滯留超時線程達上限即拒絕新調用）
         try:
             result = _run_with_timeout(contract.func, arguments,
                                        contract.timeout_ms / 1000.0)
+        except BrokerCircuitOpen as exc:
+            self.guardrail_events.append(
+                {"event": "timeout_circuit_open", "tool": resolved,
+                 "note": str(exc)})
+            return _finish({"tool": resolved,
+                            "error": f"circuit_open：{exc}"})
         except BrokerTimeout:
+            # 誠實邊界：超時只是不再等待——工具線程無法被強制終止，
+            # 副作用可能在超時之後仍然發生
+            if contract.side_effect != "read_only":
+                self.guardrail_events.append(
+                    {"event": "timeout_side_effect_risk", "tool": resolved,
+                     "note": "非只讀工具超時：執行線程不可強制終止，"
+                             "副作用可能在超時後仍然發生——重試前必須"
+                             "確認冪等性，必要時人工核對寫入結果"})
+            else:
+                self.guardrail_events.append(
+                    {"event": "tool_timeout_thread_leaked", "tool": resolved,
+                     "note": "只讀工具超時：線程繼續佔用資源直至自行結束"})
             return _finish({"tool": resolved,
                             "error": f"tool {resolved} timeout"
                                      f"（契約 {contract.timeout_ms}ms）"})
@@ -191,8 +220,9 @@ class CapabilityBroker:
         # 既不入賬也不入緩存——庫未就緒不是可複用的成功結果
         if "error" not in result \
                 and result.get("available", True) is not False:
-            self._register_evidence(resolved, span_id, result, arguments,
-                                    node_id)
+            n_ev = self._register_evidence(resolved, span_id, result,
+                                           arguments, node_id)
+            self._check_evidence_contract(contract, resolved, n_ev)
             if contract.evidence_contract.requires_coverage_record \
                     and not result.get("coverage"):
                 self.guardrail_events.append(
@@ -207,14 +237,27 @@ class CapabilityBroker:
 
     # ------------------------------------------------------------------
     def _register_evidence(self, tool: str, span_id: str, out: Dict,
-                           arguments: Dict, node_id: str) -> None:
-        """工具結果 → EvidenceRecord V2 + SearchCoverage 登記。"""
+                           arguments: Dict, node_id: str) -> int:
+        """工具結果 → EvidenceRecord V2 + SearchCoverage 登記。
+
+        返回本次調用完成核驗的證據記錄數（含已在賬去重命中）——
+        契約守衛據此判定 returns_primary_text 是否兌現。
+
+        兩條轉換路徑（統一證據適配層）：
+
+        1. passage_evidence（classics P 層記錄）→ from_legacy_p_record；
+        2. 領域證據形狀（evidence_excerpts / supporting_clauses /
+           canonical_support 等）→ Domain Pack 的 evidence_normalizer。
+        """
         from ._shared import work_registry
         reg = None
         try:
             reg = work_registry()
         except Exception:
             reg = None
+        n_evidence = 0
+        cov_id = (out.get("coverage") or {}).get("coverage_id", "") \
+            if isinstance(out.get("coverage"), dict) else ""
         for rec in (out.get("passage_evidence") or []):
             if not (isinstance(rec, dict) and rec.get("passage_id")
                     and rec.get("verbatim_text") and rec.get("quote_hash")):
@@ -232,9 +275,23 @@ class CapabilityBroker:
             v2.tool_call_id = span_id
             v2.span_id = span_id
             v2.registered_by = "capability_broker"
-            cov = out.get("coverage") or {}
-            v2.coverage_id = cov.get("coverage_id", "")
+            v2.coverage_id = cov_id
             self.ledger.register(node_id, v2, self._token)
+            n_evidence += 1
+        # 領域證據適配（P0 修復：shanghan 工具的條文證據曾在台賬計零）
+        from ..domains.registry import normalize_domain_evidence
+        seen_ids = {r.evidence_id for r in self.ledger.node_records(node_id)}
+        for v2 in normalize_domain_evidence(tool, out, self.corpus_version):
+            if v2.evidence_id in seen_ids:
+                n_evidence += 1     # 已在賬（如緩存命中重放）也算兌現
+                continue
+            v2.tool_call_id = span_id
+            v2.span_id = span_id
+            v2.registered_by = "capability_broker"
+            if not v2.coverage_id:
+                v2.coverage_id = cov_id
+            self.ledger.register(node_id, v2, self._token)
+            n_evidence += 1
         cov = out.get("coverage")
         if isinstance(cov, dict) and cov.get("coverage_id"):
             try:
@@ -244,6 +301,21 @@ class CapabilityBroker:
                 self.coverages[sc.coverage_id] = sc
             except (TypeError, ValueError):
                 pass
+        return n_evidence
+
+    def _check_evidence_contract(self, contract: ToolContractV2,
+                                 tool: str, n_evidence: int) -> None:
+        """returns_primary_text 契約兌現守衛：聲明返回原文的工具在成功
+        調用後台賬證據為零，不再靜默通過——記 guardrail 事件（非硬錯：
+        誠實零命中是合法結果；發布側由主張核驗/發布閘門按台賬 fail-closed
+        裁定，引用不會憑空出現）。"""
+        if contract.evidence_contract.returns_primary_text \
+                and n_evidence == 0:
+            self.guardrail_events.append(
+                {"event": "evidence_contract_unfulfilled", "tool": tool,
+                 "note": "契約聲明 returns_primary_text，但本次成功調用"
+                         "未產生任何可核驗正文證據——該結果不可被引用"
+                         "（主張核驗與發布閘門按台賬裁定）"})
 
     def audit_tail(self, n: int = 20) -> List[Dict]:
         return list(self.audit_log)[-n:]
@@ -262,6 +334,12 @@ def _tool_capability(name: str) -> str:
 
 def _validate_args(contract: ToolContractV2,
                    arguments: Dict) -> Optional[str]:
+    """深度參數校驗（純標準庫的 JSON Schema 子集，遞歸執行）。
+
+    頂層保持原語義：required 空值視為缺失、未知參數默認拒絕；
+    值級校驗遞歸覆蓋嵌套 object / array items / 長度 / pattern /
+    數值邊界，且 boolean 不再被 integer/number 誤接收
+    （Python isinstance(True, int) == True）。"""
     props = contract.input_schema.get("properties", {})
     required = contract.input_schema.get("required", [])
     missing = [r for r in required
@@ -271,29 +349,95 @@ def _validate_args(contract: ToolContractV2,
     unknown = [k for k in arguments if k not in props]
     if unknown:
         return f"未知參數 {'、'.join(unknown)}（可用：{'、'.join(props)}）"
-    type_map = {"string": str, "integer": int, "boolean": bool,
-                "array": list, "object": dict, "number": (int, float)}
     for k, v in arguments.items():
-        spec = props.get(k, {})
-        want = spec.get("type")
+        problem = _validate_value(k, v, props.get(k, {}))
+        if problem:
+            return problem
+    return None
+
+
+def _validate_value(path: str, v: Any, spec: Dict) -> Optional[str]:
+    """單值遞歸校驗；path 是人可讀定位（如 filters.dynasty[2]）。"""
+    if v is None or not isinstance(spec, dict):
+        return None
+    want = spec.get("type")
+    if want:
+        if want in ("integer", "number") and isinstance(v, bool):
+            return f"參數 {path} 應為 {want}（boolean 不是數值）"
+        type_map = {"string": str, "integer": int, "boolean": bool,
+                    "array": list, "object": dict, "number": (int, float)}
         py = type_map.get(want)
-        if py and v is not None and not isinstance(v, py):
-            return f"參數 {k} 應為 {want}"
-        if v is None:
-            continue
-        if "enum" in spec and v not in spec["enum"]:
-            return f"參數 {k}={v!r} 不在枚舉 {spec['enum']}"
-        if isinstance(v, (int, float)) and not isinstance(v, bool):
-            if "minimum" in spec and v < spec["minimum"]:
-                return f"參數 {k}={v} 低於下限 {spec['minimum']}"
-            if "maximum" in spec and v > spec["maximum"]:
-                return f"參數 {k}={v} 超過上限 {spec['maximum']}"
+        if py and not isinstance(v, py):
+            return f"參數 {path} 應為 {want}"
+    if "enum" in spec and v not in spec["enum"]:
+        return f"參數 {path}={v!r} 不在枚舉 {spec['enum']}"
+    if isinstance(v, str):
+        if "minLength" in spec and len(v) < spec["minLength"]:
+            return f"參數 {path} 長度 {len(v)} 低於下限 {spec['minLength']}"
+        if "maxLength" in spec and len(v) > spec["maxLength"]:
+            return f"參數 {path} 長度 {len(v)} 超過上限 {spec['maxLength']}"
+        if "pattern" in spec:
+            import re
+            try:
+                if not re.search(spec["pattern"], v):
+                    return f"參數 {path} 不匹配 pattern {spec['pattern']!r}"
+            except re.error:
+                pass    # 契約自身的壞 pattern 不應拒絕用戶輸入
+    if isinstance(v, (int, float)) and not isinstance(v, bool):
+        if "minimum" in spec and v < spec["minimum"]:
+            return f"參數 {path}={v} 低於下限 {spec['minimum']}"
+        if "maximum" in spec and v > spec["maximum"]:
+            return f"參數 {path}={v} 超過上限 {spec['maximum']}"
+    if isinstance(v, list):
+        if "minItems" in spec and len(v) < spec["minItems"]:
+            return f"參數 {path} 項數 {len(v)} 低於下限 {spec['minItems']}"
+        if "maxItems" in spec and len(v) > spec["maxItems"]:
+            return f"參數 {path} 項數 {len(v)} 超過上限 {spec['maxItems']}"
+        item_spec = spec.get("items")
+        if isinstance(item_spec, dict):
+            for i, item in enumerate(v):
+                problem = _validate_value(f"{path}[{i}]", item, item_spec)
+                if problem:
+                    return problem
+    if isinstance(v, dict):
+        sub_props = spec.get("properties", {})
+        for r in spec.get("required", []):
+            if r not in v or v.get(r) in (None, ""):
+                return f"參數 {path} 缺少必填字段 {r}"
+        if spec.get("additionalProperties") is False:
+            unknown = [k for k in v if k not in sub_props]
+            if unknown:
+                return (f"參數 {path} 含未知字段 {'、'.join(unknown)}"
+                        f"（可用：{'、'.join(sub_props)}）")
+        for k, sub in v.items():
+            if k in sub_props:
+                problem = _validate_value(f"{path}.{k}", sub, sub_props[k])
+                if problem:
+                    return problem
     return None
 
 
 def _run_with_timeout(func, arguments: Dict, timeout_s: float) -> Dict:
+    """超時執行 + 滯留線程熔斷。
+
+    誠實邊界（不可繞過的實現約束）：CPython 線程不可被強制終止，
+    join(timeout) 之後工具線程仍在運行——超時語義是「調用方不再等待
+    且結果不被採納」，不是「工具已停止」。緩解措施：
+
+    * 滯留線程進程級登記，達到 MAX_ZOMBIE_THREADS 即熔斷新調用；
+    * 超時結果不入台賬、不入緩存（call() 管道保證）；
+    * 非只讀工具超時記 timeout_side_effect_risk 守衛事件（見 call()）。
+
+    真正可終止的隔離（worker 進程池）需要可 pickle 的工具函數，與
+    legacy 綁定方法工具面衝突，屬後續工程項——如實聲明，不冒充已有。"""
     if timeout_s <= 0:
         return func(**arguments)
+    with _ZOMBIE_LOCK:
+        _ZOMBIE_THREADS[:] = [t for t in _ZOMBIE_THREADS if t.is_alive()]
+        if len(_ZOMBIE_THREADS) >= MAX_ZOMBIE_THREADS:
+            raise BrokerCircuitOpen(
+                f"{len(_ZOMBIE_THREADS)} 個超時工具線程仍在運行，"
+                "熔斷新調用（等待滯留線程結束）")
     result: List[Any] = []
     error: List[BaseException] = []
 
@@ -307,6 +451,8 @@ def _run_with_timeout(func, arguments: Dict, timeout_s: float) -> Dict:
     th.start()
     th.join(timeout=timeout_s)
     if th.is_alive():
+        with _ZOMBIE_LOCK:
+            _ZOMBIE_THREADS.append(th)
         raise BrokerTimeout(f"{timeout_s:g}s")
     if error:
         raise error[0]

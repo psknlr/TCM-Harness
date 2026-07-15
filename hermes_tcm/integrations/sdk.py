@@ -39,9 +39,16 @@ class TCMClient:
         self.store.close()
 
     # ------------------------------------------------------------------
-    def research(self, query: str, **spec_kwargs) -> Dict:
-        """研究 run → AnswerEnvelope dict（含 release 決策與 run 狀態）。"""
+    def research(self, query: str, execution_mode: str = "single",
+                 **spec_kwargs) -> Dict:
+        """研究 run → AnswerEnvelope dict（含 release 決策與 run 狀態）。
+
+        execution_mode：single=typed DAG 單代理（默認）；
+        council=隔離合議多專家（同一 RunStore/台賬類型/Release Gate）。"""
+        if execution_mode == "council":
+            return self._research_council(query, **spec_kwargs)
         row = self.controller.start(query, principal=self.principal,
+                                    execution_mode=execution_mode,
                                     **spec_kwargs)
         env = row["state"].get("envelope") or AnswerEnvelope(
             answer="", answer_type="clarification_needed",
@@ -50,6 +57,78 @@ class TCMClient:
             release={"decision": "review_required"}).to_dict()
         return {"run_id": row["run_id"], "status": row["status"],
                 "envelope": env}
+
+    def _research_council(self, query: str, **spec_kwargs) -> Dict:
+        """隔離合議模式：ResearchOrchestrator 取證+合議，結果經同一
+        Release Gate 裁定並落入同一 RunStore（run/證據/主張/工具調用
+        全部持久化——多智能體編排不再遊離於主產品路徑之外）。"""
+        from ..agents.orchestrator import ResearchOrchestrator
+        from ..envelope import evidence_entry
+        from ..harness.controller import extract_topic
+        from ..harness.release import evaluate_release
+
+        spec = self.controller.prepare(query, self.principal,
+                                       execution_mode="council",
+                                       **spec_kwargs)
+        corpus_version = spec.environment_fingerprint.get("corpus", "")
+        orch = ResearchOrchestrator(principal=self.principal,
+                                    corpus_version=corpus_version)
+        result, ledger, claims, broker = orch.run_with_context(
+            extract_topic(query), spec.task_type)
+        verdict = evaluate_release(
+            spec, claims, result["answer"],
+            ledger_problems=ledger.verify_integrity(),
+            approved=frozenset())
+        envelope = AnswerEnvelope(
+            answer=result["answer"],
+            answer_type="research_synthesis",
+            claims=[{"claim_id": c.claim_id, "text": c.claim_text,
+                     "status": c.status,
+                     "evidence_ids": c.supporting_evidence}
+                    for c in claims],
+            evidence=[evidence_entry(r.to_dict())
+                      for r in ledger.all_records()
+                      if r.is_primary_text_returned],
+            uncertainty=[f"{c.get('claim_type', '')}：{c.get('note', '')}"
+                         for c in (result.get("conflicts") or [])],
+            limitations=["council 模式：多專家隔離合議；審批續跑"
+                         "（resume approve）尚未接入合議重跑，"
+                         "review_required 需以 single 模式重查"],
+            run={"run_id": spec.run_id,
+                 "corpus_version": corpus_version,
+                 "execution_mode": "council"},
+            release=verdict)
+        status = {"pass": "completed",
+                  "pass_with_warning": "completed",
+                  "pass_after_human_review": "completed",
+                  "review_required": "paused",
+                  "blocked": "blocked",
+                  "failed_closed": "failed"}[verdict["decision"]]
+        row = self.store.load(spec.run_id)
+        state = {"envelope": envelope.to_dict(),
+                 "final_answer": result["answer"],
+                 "council": {k: result[k] for k in
+                             ("specialists", "conflicts", "verification",
+                              "synthesis_note", "budget", "n_evidence")},
+                 "ledger": ledger.to_dict(),
+                 "claims": [c.to_dict() for c in claims],
+                 "guardrail_events": result.get("guardrail_events", [])}
+        self.store.save_state(spec.run_id, status, state,
+                              row["state_version"])
+        for entry in broker.tool_calls:
+            self.store.record_tool_call(spec.run_id, entry)
+        for rec in ledger.all_records():
+            self.store.record_evidence(spec.run_id, "council",
+                                       rec.to_dict())
+        for c in claims:
+            self.store.record_claim(spec.run_id, c.to_dict())
+        for cov in broker.coverages.values():
+            self.store.record_coverage(spec.run_id, cov.to_dict())
+        self.store.append_event(spec.run_id, "run_finished",
+                                {"status": status,
+                                 "execution_mode": "council"})
+        return {"run_id": spec.run_id, "status": status,
+                "envelope": envelope.to_dict()}
 
     def resume(self, run_id: str, approve: str = "", reject: str = "",
                approver: str = "", reason: str = "") -> Dict:

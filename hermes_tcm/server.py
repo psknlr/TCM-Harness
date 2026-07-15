@@ -3,7 +3,9 @@
 
 純標準庫 ThreadingHTTPServer。端點：
 
-    GET  /readyz                     就緒探針（語料/工具/存儲）
+    GET  /livez                      存活探針（進程活着即 200，不觸數據）
+    GET  /readyz                     就緒探針（語料/工具/存儲；核心依賴
+                                     缺失時 503 + ok:false——不假就緒）
     GET  /api/tcm/tools?q=&ns=       工具發現（命名空間/按需 discover）
     GET  /api/tcm/resource?uri=      tcm:// 資源讀取
     POST /api/tcm/research           研究 run → AnswerEnvelope
@@ -92,6 +94,8 @@ class TCMRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
             url = urlparse(self.path)
+            if url.path == "/livez":
+                return self._send({"ok": True})
             if url.path == "/readyz":
                 return self._readyz()
             if not self._authed():
@@ -126,12 +130,16 @@ class TCMRequestHandler(BaseHTTPRequestHandler):
                 if not query:
                     return self._send({"error": "query_required"}, 400)
                 principal = _principal_from_body(body)
+                mode = str(body.get("execution_mode", "single"))
+                from .harness.run_spec import EXECUTION_MODES
+                if mode not in EXECUTION_MODES:
+                    mode = "single"      # 非法模式 fail-closed 到默認
                 with self.service.lock:
                     client = TCMClient(
                         store_path=self.service.client.store.path,
                         principal=principal)
                     try:
-                        out = client.research(query)
+                        out = client.research(query, execution_mode=mode)
                     finally:
                         client.store.close()
                 return self._send(out)
@@ -169,15 +177,48 @@ class TCMRequestHandler(BaseHTTPRequestHandler):
 
     # ------------------------------------------------------------------
     def _readyz(self):
+        payload, status = readiness_report(self.service.client)
+        self._send(payload, status)
+
+
+def readiness_report(client) -> "tuple[Dict, int]":
+    """就緒裁定（/livez 與 /readyz 分離——假健康防護）。
+
+    P0 修復：此前語料缺失仍返回 ok:true + HTTP 200，K8s/負載均衡會
+    據此把流量打到不能提供承諾核心功能的實例。核心依賴（語料/工具/
+    run 存儲）任一缺失即 503 + ok:false + 缺失組件清單。"""
+    try:
         from .tools._shared import searcher
-        reg = self.service.client.registry
         corpus_ready = searcher() is not None
-        self._send({"ok": True,
-                    "corpus_available": corpus_ready,
-                    "n_tools": len(reg.names()),
-                    "note": ("" if corpus_ready
-                             else "全庫未就緒：檢索類端點將如實返回 "
-                                  "corpus_unavailable")})
+    except Exception:
+        corpus_ready = False
+    n_tools = len(client.registry.names())
+    store_ok = True
+    try:
+        client.store.load("__readyz_probe__")      # 只讀探測 DB 可用性
+    except Exception:
+        store_ok = False
+    from .domains.registry import list_domain_packs
+    packs = [{"domain_id": p["domain_id"], "status": p["status"]}
+             for p in list_domain_packs()]
+    missing = []
+    if not corpus_ready:
+        missing.append("corpus")
+    if n_tools == 0:
+        missing.append("tools")
+    if not store_ok:
+        missing.append("run_store")
+    ok = not missing
+    payload = {"ok": ok,
+               "corpus_available": corpus_ready,
+               "n_tools": n_tools,
+               "run_store": store_ok,
+               "domain_packs": packs,
+               "missing": missing,
+               "note": ("" if ok
+                        else "核心依賴缺失，不可接流量；語料獲取："
+                             "python3 -m hermes_shanghan library fetch")}
+    return payload, (200 if ok else 503)
 
 
 def make_server(host: str = "127.0.0.1", port: int = 0,
