@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS runs (
     state_version INTEGER NOT NULL DEFAULT 0,
     spec_json TEXT NOT NULL,
     state_json TEXT NOT NULL DEFAULT '{}',
+    owner_subject TEXT NOT NULL DEFAULT '',
+    tenant_id TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
@@ -101,7 +103,13 @@ CREATE TABLE IF NOT EXISTS leases (
     expires_at REAL NOT NULL,
     PRIMARY KEY (run_id, node_id)
 );
+CREATE INDEX IF NOT EXISTS idx_events_run ON events(run_id);
+CREATE INDEX IF NOT EXISTS idx_tool_calls_run ON tool_calls(run_id);
 """
+
+
+class RunAccessDenied(RuntimeError):
+    """跨租戶/非屬主訪問 run（→ 403）。"""
 
 
 class StaleStateError(RuntimeError):
@@ -128,9 +136,30 @@ class RunStore:
                                      check_same_thread=False)
         self._conn.execute("PRAGMA journal_mode=WAL")
         self._conn.execute("PRAGMA synchronous=NORMAL")
+        self._conn.execute("PRAGMA busy_timeout=5000")
+        self._conn.execute("PRAGMA foreign_keys=ON")
         self._conn.executescript(SCHEMA)
+        self._migrate()
         self._conn.commit()
         self._lock = threading.Lock()
+
+    def _migrate(self) -> None:
+        """向後兼容遷移：舊庫（無 owner/tenant 列）補列。"""
+        cols = {r[1] for r in
+                self._conn.execute("PRAGMA table_info(runs)").fetchall()}
+        if "owner_subject" not in cols:
+            self._conn.execute(
+                "ALTER TABLE runs ADD COLUMN owner_subject TEXT "
+                "NOT NULL DEFAULT ''")
+        if "tenant_id" not in cols:
+            self._conn.execute(
+                "ALTER TABLE runs ADD COLUMN tenant_id TEXT "
+                "NOT NULL DEFAULT ''")
+        # 索引在列存在後建（新舊庫皆安全）
+        self._conn.execute("CREATE INDEX IF NOT EXISTS idx_runs_tenant "
+                           "ON runs(tenant_id)")
+        self._conn.execute("CREATE INDEX IF NOT EXISTS idx_runs_owner "
+                           "ON runs(owner_subject)")
 
     def close(self) -> None:
         with self._lock:
@@ -139,14 +168,52 @@ class RunStore:
     # ------------------------------------------------------------------
     # runs（CAS 狀態）
     # ------------------------------------------------------------------
-    def create_run(self, run_id: str, spec: Dict) -> None:
+    def create_run(self, run_id: str, spec: Dict,
+                   owner_subject: str = "", tenant_id: str = "") -> None:
         with self._lock:
             self._conn.execute(
                 "INSERT INTO runs (run_id, status, spec_json, state_json,"
-                " created_at, updated_at) VALUES (?,?,?,?,?,?)",
+                " owner_subject, tenant_id, created_at, updated_at)"
+                " VALUES (?,?,?,?,?,?,?,?)",
                 (run_id, "queued", json.dumps(spec, ensure_ascii=False),
-                 "{}", _now(), _now()))
+                 "{}", owner_subject, tenant_id, _now(), _now()))
             self._conn.commit()
+
+    def run_acl(self, run_id: str) -> Optional[Dict]:
+        """run 的屬主/租戶（授權判定用）；未知 run 返回 None。"""
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT owner_subject, tenant_id FROM runs WHERE run_id=?",
+                (run_id,)).fetchone()
+        if row is None:
+            return None
+        return {"owner_subject": row[0], "tenant_id": row[1]}
+
+    def authorize(self, run_id: str, principal, action: str = "read"):
+        """跨租戶/非屬主訪問拒絕（P0-3）。system_admin 例外（同租戶內）。
+
+        principal：hermes_tcm.core.principals.Principal。
+        返回 run acl（授權通過）或拋 RunAccessDenied（403）。
+        未知 run 返回 None（調用方按 404 處理）。"""
+        acl = self.run_acl(run_id)
+        if acl is None:
+            return None
+        # 未標記屬主的舊 run（遷移前）：僅同名 subject 或匿名可讀
+        owner = acl["owner_subject"]
+        tenant = acl["tenant_id"]
+        p_tenant = getattr(principal, "tenant_id", "") or ""
+        p_subject = getattr(principal, "subject", "") or ""
+        p_role = getattr(principal, "role", "") or ""
+        if tenant and p_tenant and tenant != p_tenant:
+            raise RunAccessDenied(
+                f"跨租戶訪問被拒：run 屬 {tenant}，主體屬 {p_tenant}")
+        if p_role == "system_admin":
+            return acl
+        if owner and p_subject and owner != p_subject:
+            raise RunAccessDenied(
+                f"非屬主訪問被拒：run 屬 {owner}，主體 {p_subject}"
+                f"（action={action}）")
+        return acl
 
     def load(self, run_id: str) -> Optional[Dict]:
         with self._lock:

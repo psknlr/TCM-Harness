@@ -71,11 +71,13 @@ class ResourceResolver:
 
     def __init__(self, run_store=None, ledger=None,
                  packets: Optional[Dict] = None,
-                 claims: Optional[Dict] = None):
+                 claims: Optional[Dict] = None,
+                 principal=None):
         self.run_store = run_store
         self.ledger = ledger
         self.packets = packets or {}
         self.claims = claims or {}
+        self.principal = principal      # 提供時強制 run 租戶授權（P0-3）
 
     def read(self, uri: str) -> Dict[str, Any]:
         uri = (uri or "").strip()
@@ -184,10 +186,30 @@ class ResourceResolver:
     def _read_runs(self, run_id: str) -> Dict:
         if self.run_store is None:
             return {"error": "本會話無運行存儲"}
-        state = self.run_store.load(run_id)
-        if state is None:
+        # P0-3：跨租戶/非屬主訪問拒絕（authorize 拋 RunAccessDenied →
+        # 由 server 轉 403）
+        if self.principal is not None:
+            acl = self.run_store.authorize(run_id, self.principal, "read")
+            if acl is None:
+                return {"error": f"未知運行：{run_id}"}
+        row = self.run_store.load(run_id)
+        if row is None:
             return {"error": f"未知運行：{run_id}"}
-        return {"uri": f"tcm://runs/{run_id}", "run": state}
+        # 字段投影/脫敏：不直接返回完整 RunState（不洩露他人可能誤入的
+        # 內部狀態）——只回摘要 + 信封
+        state = row.get("state", {})
+        env = state.get("envelope")
+        projected = {
+            "run_id": run_id,
+            "status": row.get("status"),
+            "task_type": row.get("spec", {}).get("task_type"),
+            "created_at": row.get("spec", {}).get("created_at"),
+            "release_decision": (env or {}).get("release", {}).get(
+                "decision") if env else None,
+            "n_claims": len((env or {}).get("claims", [])) if env else 0,
+            "envelope": env,
+        }
+        return {"uri": f"tcm://runs/{run_id}", "run": projected}
 
     def _read_policies(self, policy_id: str) -> Dict:
         from ..claims.policy_dsl import ConclusionPolicyEngine

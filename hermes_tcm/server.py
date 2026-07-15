@@ -1,17 +1,25 @@
-"""Hermes-TCM HTTP 服務（Protocol §15：所有端點返回統一 AnswerEnvelope
-或結構化 JSON，禁止裸文本）。
+"""Hermes-TCM HTTP 服務（Protocol §14/§15）。
 
-純標準庫 ThreadingHTTPServer。端點：
+**開發/演示服務器**（純標準庫 ThreadingHTTPServer）——生產請走
+ASGI + PostgreSQL + worker pool（見 docs/MATURITY 成熟度分級）。
 
-    GET  /readyz                     就緒探針（語料/工具/存儲）
-    GET  /api/tcm/tools?q=&ns=       工具發現（命名空間/按需 discover）
-    GET  /api/tcm/resource?uri=      tcm:// 資源讀取
+端點：
+
+    GET  /livez                      進程存活
+    GET  /readyz                     部署 profile 就緒（不滿足→503）
+    GET  /api/tcm/tools?q=&ns=       工具發現（按需 discover）
+    GET  /api/tcm/resource?uri=      tcm:// 資源讀取（租戶授權 + 投影）
     POST /api/tcm/research           研究 run → AnswerEnvelope
     POST /api/tcm/tool               單工具調用（Broker 中介）
-    POST /api/tcm/resume             審批/續跑
+    POST /api/tcm/resume             審批/續跑（審核人身份強制核驗）
 
-安全：HERMES_SERVER_TOKEN 設定時要求 Bearer 鑒權；請求體上限 256KB；
-異常只回錯誤類型不回內部細節；默認只綁定 127.0.0.1。
+安全（P0-1/P0-3）：
+
+* Principal **只來自服務端認證**（AuthRegistry：token→subject/tenant/
+  max_role/allowed_purposes）；請求體 role 只能**降級**，不能提權。
+* 401 = 未認證；403 = 已認證但越權（提權/跨租戶/審核資格不足）。
+* 未配置任何 token = 匿名開發模式（public 上限，僅本機演示）。
+* HERMES_TCM_READYZ_PROFILE=research 時語料未就緒 readyz 返回 503。
 """
 from __future__ import annotations
 
@@ -20,10 +28,12 @@ import os
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 from urllib.parse import parse_qs, urlparse
 
-from .core.principals import PURPOSES_OF_USE, ROLES, Principal
+from .core.auth import AuthenticatedPrincipal, AuthError, AuthRegistry, AuthzError
+from .core.principals import Principal
+from .harness.checkpoint import RunAccessDenied
 from .integrations.mcp import ResourceResolver
 from .integrations.sdk import TCMClient
 
@@ -33,23 +43,14 @@ MAX_BODY_BYTES = 262_144
 class _Service:
     """共享服務狀態（單例注入 Handler）。"""
 
-    def __init__(self, store_path: Optional[Path] = None):
+    def __init__(self, store_path: Optional[Path] = None,
+                 auth: Optional[AuthRegistry] = None):
         self.client = TCMClient(store_path=store_path)
+        self.auth = auth or AuthRegistry.from_env()
         self.lock = threading.Lock()
 
     def close(self):
         self.client.close()
-
-
-def _principal_from_body(body: Dict) -> Principal:
-    role = body.get("role", "researcher")
-    purpose = body.get("purpose_of_use", "historical_research")
-    if role not in ROLES:
-        role = "public"          # 非法角色 fail-closed 收斂到最低權限
-    if purpose not in PURPOSES_OF_USE:
-        purpose = "patient_education"   # 非法目的收斂到最嚴目的
-    return Principal(subject=str(body.get("subject", "api"))[:64],
-                     role=role, purpose_of_use=purpose)
 
 
 class TCMRequestHandler(BaseHTTPRequestHandler):
@@ -63,14 +64,37 @@ class TCMRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(blob)))
         self.end_headers()
-        self.wfile.write(blob)
+        if self.command != "HEAD":
+            self.wfile.write(blob)
 
-    def _authed(self) -> bool:
-        token = os.environ.get("HERMES_SERVER_TOKEN", "")
-        if not token:
-            return True
-        got = self.headers.get("Authorization", "")
-        return got == f"Bearer {token}"
+    def _authenticate(self) -> Optional[AuthenticatedPrincipal]:
+        """→ 認證主體；失敗時發 401 並返回 None。"""
+        try:
+            return self.service.auth.authenticate(
+                self.headers.get("Authorization", ""))
+        except AuthError as exc:
+            self._send({"error": "unauthenticated", "detail": str(exc)},
+                       401)
+            return None
+
+    def _principal(self, body: Dict
+                   ) -> Tuple[Optional[Principal], Optional[AuthenticatedPrincipal]]:
+        """認證 + 解析執行 Principal（body.role 只能降級）。
+        提權/越權 → 403。返回 (principal, auth) 或 (None, None)（已發響應）。"""
+        auth = self._authenticate()
+        if auth is None:
+            return None, None
+        try:
+            principal = auth.resolve(
+                requested_role=str(body.get("role", "")),
+                requested_purpose=str(body.get("purpose_of_use", "")))
+            return principal, auth
+        except AuthzError as exc:
+            self._send({"error": "forbidden", "detail": str(exc)}, 403)
+            return None, None
+        except ValueError as exc:
+            self._send({"error": "bad_request", "detail": str(exc)}, 400)
+            return None, None
 
     def _body(self) -> Optional[Dict]:
         length = int(self.headers.get("Content-Length") or 0)
@@ -92,15 +116,18 @@ class TCMRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
             url = urlparse(self.path)
+            if url.path == "/livez":
+                return self._send({"ok": True, "status": "alive"})
             if url.path == "/readyz":
                 return self._readyz()
-            if not self._authed():
-                return self._send({"error": "unauthorized"}, 401)
+            auth = self._authenticate()
+            if auth is None:
+                return
             if url.path == "/api/tcm/tools":
                 q = parse_qs(url.query)
                 query = (q.get("q") or [""])[0]
                 ns = (q.get("ns") or [""])[0]
-                reg = self.service.client.registry
+                reg = self.service.client.registry.for_role(auth.max_role)
                 if query or ns:
                     return self._send({"tools": reg.discover(
                         query=query, namespace=ns)})
@@ -108,15 +135,21 @@ class TCMRequestHandler(BaseHTTPRequestHandler):
                                    "note": "完整定義經 ?q=/?ns= 按需取"})
             if url.path == "/api/tcm/resource":
                 uri = (parse_qs(url.query).get("uri") or [""])[0]
-                return self._send(self.service.client.read_resource(uri))
+                principal = auth.resolve()
+                try:
+                    out = ResourceResolver(
+                        run_store=self.service.client.store,
+                        principal=principal).read(uri)
+                except RunAccessDenied as exc:
+                    return self._send({"error": "forbidden",
+                                       "detail": str(exc)}, 403)
+                return self._send(out)
             return self._send({"error": "not_found"}, 404)
         except Exception as exc:   # noqa: BLE001 — 不洩露內部細節
             self._send({"error": type(exc).__name__}, 500)
 
     def do_POST(self):
         try:
-            if not self._authed():
-                return self._send({"error": "unauthorized"}, 401)
             body = self._body()
             if body is None:
                 return
@@ -125,7 +158,9 @@ class TCMRequestHandler(BaseHTTPRequestHandler):
                 query = str(body.get("query", "")).strip()
                 if not query:
                     return self._send({"error": "query_required"}, 400)
-                principal = _principal_from_body(body)
+                principal, _ = self._principal(body)
+                if principal is None:
+                    return
                 with self.service.lock:
                     client = TCMClient(
                         store_path=self.service.client.store.path,
@@ -139,12 +174,15 @@ class TCMRequestHandler(BaseHTTPRequestHandler):
                 name = str(body.get("name", ""))
                 if not name:
                     return self._send({"error": "name_required"}, 400)
-                principal = _principal_from_body(body)
+                principal, _ = self._principal(body)
+                if principal is None:
+                    return
                 client = TCMClient(store_path=self.service.client
                                    .store.path, principal=principal)
                 try:
-                    out = client.call_tool(name,
-                                           body.get("arguments") or {})
+                    out = client.call_tool(
+                        name, body.get("arguments") or {},
+                        approved_operations=None)
                 finally:
                     client.store.close()
                 return self._send(out)
@@ -152,38 +190,56 @@ class TCMRequestHandler(BaseHTTPRequestHandler):
                 run_id = str(body.get("run_id", ""))
                 if not run_id:
                     return self._send({"error": "run_id_required"}, 400)
+                reviewer, _ = self._principal(body)
+                if reviewer is None:
+                    return
                 with self.service.lock:
-                    out = self.service.client.resume(
+                    store = self.service.client.store
+                    try:
+                        store.authorize(run_id, reviewer, "approve")
+                    except RunAccessDenied as exc:
+                        return self._send({"error": "forbidden",
+                                           "detail": str(exc)}, 403)
+                    out = self.service.client.controller.resume(
                         run_id,
                         approve=str(body.get("approve", "")),
                         reject=str(body.get("reject", "")),
-                        approver=str(body.get("approver", ""))[:64],
-                        reason=str(body.get("reason", ""))[:256])
-                return self._send(out)
+                        reason=str(body.get("reason", ""))[:256],
+                        reviewer=reviewer)
+                return self._send({"run_id": run_id, "status": out["status"],
+                                   "envelope": out["state"].get("envelope",
+                                                                {})})
             return self._send({"error": "not_found"}, 404)
         except ValueError as exc:
             self._send({"error": "bad_request",
-                        "type": type(exc).__name__}, 400)
+                        "detail": str(exc)[:200]}, 400)
         except Exception as exc:   # noqa: BLE001
             self._send({"error": type(exc).__name__}, 500)
 
     # ------------------------------------------------------------------
     def _readyz(self):
-        from .tools._shared import searcher
+        """部署 profile 就緒（P1-12：不返回假健康）。研究 profile 下
+        語料未就緒返回 503。"""
+        from .corpus.fingerprint import corpus_manifest_summary
         reg = self.service.client.registry
-        corpus_ready = searcher() is not None
-        self._send({"ok": True,
-                    "corpus_available": corpus_ready,
-                    "n_tools": len(reg.names()),
-                    "note": ("" if corpus_ready
-                             else "全庫未就緒：檢索類端點將如實返回 "
-                                  "corpus_unavailable")})
+        summary = corpus_manifest_summary()
+        profile = os.environ.get("HERMES_TCM_READYZ_PROFILE", "any")
+        failed = []
+        if profile == "research" and not summary["ready"]:
+            failed = ["corpus", "index"]
+        payload = {"ok": not failed,
+                   "profile": profile,
+                   "corpus": summary,
+                   "n_tools": len(reg.names()),
+                   "failed_checks": failed}
+        self._send(payload, 200 if not failed else 503)
 
 
 def make_server(host: str = "127.0.0.1", port: int = 0,
-                store_path: Optional[Path] = None) -> ThreadingHTTPServer:
+                store_path: Optional[Path] = None,
+                auth: Optional[AuthRegistry] = None) -> ThreadingHTTPServer:
     """構建服務器（port=0 取臨時端口；調用方負責 serve_forever/shutdown）。"""
-    service = _Service(store_path=store_path)
+    service = _Service(store_path=store_path, auth=auth)
     handler = type("BoundHandler", (TCMRequestHandler,),
                    {"service": service})
     httpd = ThreadingHTTPServer((host, port), handler)

@@ -27,9 +27,22 @@ dependencies = []
 # Enables real LLMs via LiteLLM (100+ providers). Without it the system
 # transparently uses the deterministic `local` backend.
 llm = ["litellm>=1.40"]
+# 開發依賴（AGENTS.md 要求 pytest；核心運行時仍零第三方依賴）
+dev = [
+  "pytest",
+  "pytest-timeout",
+  "pytest-randomly",
+  "pytest-xdist",
+  "coverage",
+  "ruff",
+  "build",
+  "pip-audit",
+]
 
 [project.scripts]
 hermes-shanghan = "hermes_shanghan.cli:main"
+# 新內核的第一等 CLI（不再只是內部模塊）
+hermes-tcm = "hermes_tcm.cli:main"
 
 [tool.setuptools.dynamic]
 version = { attr = "hermes_shanghan._version.__version__" }

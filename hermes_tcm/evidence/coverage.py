@@ -34,6 +34,9 @@ class SearchCoverage:
     earlier_partial_candidates: int = 0
     known_gaps: List[str] = field(default_factory=list)
     stop_reason: str = "complete"
+    # Run ScopeContract 綁定（P0-4）：檢索實際受哪個範圍合同約束
+    scope_id: str = ""
+    scope_hash: str = ""
     created_at: str = field(
         default_factory=lambda: time.strftime("%Y-%m-%dT%H:%M:%S"))
 

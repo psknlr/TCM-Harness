@@ -20,6 +20,12 @@ from ..evidence.packets import verify_packet
 from .policy_dsl import ConclusionPolicyEngine
 from .records import ClaimRecord
 
+# 高風險主張：quotation 必須真正回源核驗（source_reverified），僅內部
+# hash 自洽不足以支撐（Protocol §6.2 P0-5）
+SOURCE_REVERIFY_REQUIRED = frozenset(
+    {"earliest_attestation", "quotation_relay", "clinical_recommendation",
+     "formula_lineage"})
+
 
 class ClaimVerifier:
     def __init__(self, ledger: TypedEvidenceLedger,
@@ -50,11 +56,24 @@ class ClaimVerifier:
         if no_identity:
             result["attribution_no_identity"] = no_identity
 
-        # 2. quotation：逐字重驗
-        q = verify_packet(ev, self.passage_index)
+        # 2. quotation：逐字重驗（自洽 + 回源 + 版本一致）
+        q = verify_packet(ev, self.passage_index,
+                          expected_corpus_version=self.ledger.corpus_version)
         result["quotation"] = "pass" if q["ok"] else "fail"
+        result["integrity_self_check"] = q["integrity_self_check"]
+        result["source_reverified"] = q["source_reverified"]
+        result["verified_against_corpus_version"] = \
+            q["verified_against_corpus_version"]
         if not q["ok"]:
             result["quotation_failures"] = q["failures"]
+        # P0-5：高風險主張必須真正回源核驗——只有 hash 自洽（庫不可用
+        # 或未傳 index）時不足以支撐首見/轉引/臨床/方劑源流結論
+        elif claim.claim_type in SOURCE_REVERIFY_REQUIRED \
+                and ev and not q["source_reverified"]:
+            result["quotation"] = "review"
+            result["source_reverify_note"] = (
+                "高風險主張要求回源核驗（source_reverified），"
+                "當前僅通過內部自洽——需版本鎖定庫回源")
 
         # 3. semantic_support：確定性下界檢查——正文型主張的證據摘錄
         #    必須出現在主張文本中（模板編譯保證），否則標 review
@@ -98,7 +117,8 @@ class ClaimVerifier:
             claim.status = "failed"
         elif policy["verdict"] == "review_required" \
                 or result["semantic_support"] == "review" \
-                or result["contradiction"] == "review":
+                or result["contradiction"] == "review" \
+                or result["quotation"] == "review":
             claim.status = "needs_review"
         else:
             claim.status = "verified"

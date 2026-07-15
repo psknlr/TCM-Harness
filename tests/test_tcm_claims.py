@@ -260,7 +260,10 @@ class TestClaimVerifier(unittest.TestCase):
             [c1, c2],
             tools_used=["citation.trace_quote", "citation.counter_search"],
             coverage_lookup={"cov_good": good, "cov_bad": bad})
-        self.assertEqual(c1.status, "verified")
+        # P0-5：無 passage_index → 首見類無法回源核驗 → needs_review
+        # （不再直接 verified）；壞覆蓋（更早候選）仍是策略 fail
+        self.assertEqual(c1.status, "needs_review")
+        self.assertEqual(c1.verification["source_reverified"], False)
         self.assertEqual(c2.status, "failed")      # 更早候選覆蓋 → fail
         self.assertEqual(summary["n_failed"], 1)
 

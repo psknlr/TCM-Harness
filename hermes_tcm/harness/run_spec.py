@@ -152,6 +152,9 @@ def environment_fingerprint() -> Dict[str, str]:
     from ..claims.policy_dsl import ConclusionPolicyEngine
     from ..tools.registry import TOOLS_V2_VERSION
 
+    from ..corpus.fingerprint import (INDEX_VERSION, SEGMENTATION_VERSION,
+                                      library_corpus_version)
+
     legacy = spec_versions()
     engine = ConclusionPolicyEngine()
     skills_fp = ""
@@ -161,7 +164,12 @@ def environment_fingerprint() -> Dict[str, str]:
     except Exception:
         skills_fp = ""
     return {
-        "corpus": legacy.get("corpus_version", ""),
+        # corpus 指向**檢索數據源**（jicheng 全庫）的實際版本，不是
+        # 伤寒論規則庫 manifest——證據回庫核驗/replay 以此為準
+        "corpus": library_corpus_version(),
+        "rules_manifest": legacy.get("corpus_version", ""),
+        "segmentation": SEGMENTATION_VERSION,
+        "index": INDEX_VERSION,
         "tools": f"v2-{TOOLS_V2_VERSION}+legacy-"
                  f"{legacy.get('tool_spec_version', '')}",
         "policies": f"{engine.version}@{engine.fingerprint}",

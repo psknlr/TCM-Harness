@@ -59,23 +59,40 @@ def packet_id_for(topic: str, records: Sequence[EvidenceRecord]) -> str:
 
 
 def verify_packet(records: Sequence[EvidenceRecord],
-                  passage_index=None) -> Dict[str, Any]:
-    """逐條重驗：hash 自洽 +（庫可用時）回庫按座標切片對照。
+                  passage_index=None,
+                  expected_corpus_version: str = "") -> Dict[str, Any]:
+    """逐條重驗（P0-5：明確區分兩種強度）：
 
-    passage_index：hermes_shanghan.classics.model.PassageIndex；為 None
-    時只做 hash 自洽核驗並如實標注 reverified_against_library=False。
+    * integrity_self_check：verbatim ↔ quote_hash 內部自洽（只證明記錄
+      未在內存被改寫，**不**證明文字真的來自指定版本/段落/座標）。
+    * source_reverified：回到版本鎖定的庫，按 passage_id + 座標切片與
+      verbatim 完全相同——真正的回源核驗。passage_index=None 時該項為
+      False（如實）。expected_corpus_version 給定時逐條核對記錄語料版本。
+
+    返回 ok = 自洽通過且（若提供 index）回源通過且（若提供版本）版本一致。
     """
     failures: List[Dict] = []
-    n_ok = 0
+    n_self_ok = 0
+    n_reverified = 0
+    version_mismatch = 0
     for r in records:
+        # 1. 自洽
         if r.verbatim and quote_hash(r.verbatim) != r.quote_hash:
             failures.append({"evidence_id": r.evidence_id,
                              "reason": "quote_hash_mismatch"})
             continue
+        n_self_ok += 1
+        # 2. 版本一致（要求時）
+        if expected_corpus_version and r.corpus_version \
+                and r.corpus_version != expected_corpus_version:
+            version_mismatch += 1
+            failures.append({"evidence_id": r.evidence_id,
+                             "reason": "corpus_version_mismatch",
+                             "record_version": r.corpus_version,
+                             "expected": expected_corpus_version})
+            continue
+        # 3. 回源核驗（庫可用時）
         if passage_index is not None and r.passage_id:
-            # work_title 是編目單元標題（Library._resolve 可匹配）——先用
-            # 它定位單元，命中 by-id 緩存則零掃描；缺失時退回全庫掃描
-            # （不能把「封頂掃描未命中」誤報為 passage_not_found）
             p = (passage_index.get(r.passage_id, work=r.work_title)
                  if r.work_title else None)
             if p is None:
@@ -91,9 +108,18 @@ def verify_packet(records: Sequence[EvidenceRecord],
                 failures.append({"evidence_id": r.evidence_id,
                                  "reason": "verbatim_mismatch"})
                 continue
-        n_ok += 1
-    return {"ok": not failures, "n_verified": n_ok,
+            n_reverified += 1
+    total = len(records)
+    reverified = (passage_index is not None
+                  and n_reverified == total and total > 0)
+    return {"ok": not failures,
+            "integrity_self_check": n_self_ok == total,
+            "source_reverified": reverified,
+            "n_verified": n_self_ok,
+            "n_reverified": n_reverified,
             "n_failed": len(failures), "failures": failures,
+            "version_mismatch": version_mismatch,
+            "verified_against_corpus_version": expected_corpus_version,
             "reverified_against_library": passage_index is not None}
 
 

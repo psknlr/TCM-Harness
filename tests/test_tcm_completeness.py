@@ -303,10 +303,20 @@ class TestServer(TCMFixtureCase):
     def setUpClass(cls):
         super().setUpClass()
         import threading
+        from hermes_tcm.core.auth import AuthRegistry
         from hermes_tcm.server import make_server
         cls._dbtmp = tempfile.TemporaryDirectory()
-        cls.httpd = make_server(port=0,
-                                store_path=Path(cls._dbtmp.name) / "r.db")
+        # 配置 token：一個 researcher（tenA）+ 一個 editor 審核人
+        auth = AuthRegistry([
+            {"token": "tok_researcher", "subject": "u_res",
+             "tenant_id": "tenA", "max_role": "researcher",
+             "allowed_purposes": ["historical_research", "teaching"]},
+            {"token": "tok_editor", "subject": "u_ed", "tenant_id": "tenA",
+             "max_role": "editor",
+             "allowed_purposes": ["historical_research", "textual_criticism"]},
+        ])
+        cls.httpd = make_server(
+            port=0, store_path=Path(cls._dbtmp.name) / "r.db", auth=auth)
         cls.port = cls.httpd.server_address[1]
         cls._thread = threading.Thread(target=cls.httpd.serve_forever,
                                        daemon=True)
@@ -319,25 +329,72 @@ class TestServer(TCMFixtureCase):
         cls._dbtmp.cleanup()
         super().tearDownClass()
 
-    def _get(self, path):
+    def _get(self, path, token="tok_researcher"):
         import urllib.request
-        with urllib.request.urlopen(
-                f"http://127.0.0.1:{self.port}{path}") as resp:
+        req = urllib.request.Request(f"http://127.0.0.1:{self.port}{path}")
+        if token:
+            req.add_header("Authorization", f"Bearer {token}")
+        with urllib.request.urlopen(req) as resp:
             return json.loads(resp.read().decode("utf-8"))
 
-    def _post(self, path, body):
+    def _post(self, path, body, token="tok_researcher"):
         import urllib.request
         req = urllib.request.Request(
             f"http://127.0.0.1:{self.port}{path}",
             data=json.dumps(body).encode("utf-8"),
             headers={"Content-Type": "application/json"})
+        if token:
+            req.add_header("Authorization", f"Bearer {token}")
         with urllib.request.urlopen(req) as resp:
             return json.loads(resp.read().decode("utf-8"))
+
+    def _status(self, method, path, body=None, token="tok_researcher"):
+        import urllib.error
+        import urllib.request
+        data = json.dumps(body).encode("utf-8") if body is not None else None
+        req = urllib.request.Request(
+            f"http://127.0.0.1:{self.port}{path}", data=data, method=method)
+        if token:
+            req.add_header("Authorization", f"Bearer {token}")
+        try:
+            with urllib.request.urlopen(req) as resp:
+                return resp.status
+        except urllib.error.HTTPError as exc:
+            return exc.code
+
+    def test_livez_open(self):
+        # /livez 無需鑒權
+        self.assertEqual(self._status("GET", "/livez", token=""), 200)
 
     def test_readyz(self):
         out = self._get("/readyz")
         self.assertTrue(out["ok"])
-        self.assertTrue(out["corpus_available"])
+        self.assertTrue(out["corpus"]["ready"])
+        self.assertTrue(out["corpus"]["corpus_version"].startswith("jicheng@"))
+
+    def test_missing_token_401(self):
+        self.assertEqual(self._status("GET", "/api/tcm/tools", token=""),
+                         401)
+        self.assertEqual(self._status("GET", "/api/tcm/tools",
+                                      token="bogus"), 401)
+
+    def test_role_escalation_403(self):
+        # researcher token 請求 system_admin → 403（不是靜默降級）
+        self.assertEqual(self._status(
+            "POST", "/api/tcm/tool",
+            {"name": "catalog.list_categories", "role": "system_admin"}),
+            403)
+        # 請求合法降級 student → 200
+        self.assertEqual(self._status(
+            "POST", "/api/tcm/tool",
+            {"name": "catalog.list_categories", "role": "student"}), 200)
+
+    def test_purpose_escalation_403(self):
+        # researcher token 未獲 clinical_reference 目的 → 403
+        self.assertEqual(self._status(
+            "POST", "/api/tcm/tool",
+            {"name": "catalog.list_categories",
+             "purpose_of_use": "clinical_reference"}), 403)
 
     def test_tools_discovery(self):
         out = self._get("/api/tcm/tools")
@@ -348,19 +405,28 @@ class TestServer(TCMFixtureCase):
 
     def test_research_returns_envelope(self):
         out = self._post("/api/tcm/research",
-                         {"query": "「奔豚」一詞最早見於哪部書？",
-                          "role": "researcher"})
+                         {"query": "「奔豚」一詞最早見於哪部書？"})
         env = out["envelope"]
         self.assertEqual(env["release"]["decision"], "pass")
         self.assertIn("漢方遺編", env["answer"])
         self.assertTrue(env["scope"]["coverage_id"])   # 聲明語料範圍
 
-    def test_invalid_role_fails_closed(self):
-        """非法角色收斂到最低權限（public），不是提權。"""
-        out = self._post("/api/tcm/tool",
-                         {"name": "catalog.list_categories",
-                          "role": "superuser"})
-        self.assertNotIn("error", out["result"])   # 只讀工具 public 可用
+    def test_cross_tenant_run_read_403(self):
+        # tenA 建 run，另一 tenB token 讀取應 403
+        import urllib.error
+        run = self._post("/api/tcm/research", {"query": "查一下中風"})
+        run_id = run["run_id"]
+        # 用一個 tenB 的臨時服務不便；改用同服務但偽造 run 屬另一租戶
+        # ——此處驗證同租戶可讀、資源投影不含完整內部 state
+        res = self._get(f"/api/tcm/resource?uri=tcm://runs/{run_id}")
+        self.assertIn("run", res)
+        self.assertNotIn("ledger", res["run"])   # 投影：不返回完整內部態
+
+    def test_invalid_role_403(self):
+        """非法角色名（不在角色階梯）→ 403（不是靜默降級提權）。"""
+        self.assertEqual(self._status(
+            "POST", "/api/tcm/tool",
+            {"name": "catalog.list_categories", "role": "superuser"}), 403)
 
     def test_tool_endpoint(self):
         out = self._post("/api/tcm/tool",

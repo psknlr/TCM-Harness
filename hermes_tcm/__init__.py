@@ -26,6 +26,14 @@
 """
 from __future__ import annotations
 
+# 版本源說明（消除漂移）：本倉庫是單一分發 `hermes-shanghan`
+# （版本源 hermes_shanghan._version）。hermes_tcm 內核有自己的語義
+# 版本號 __version__（隨內核演進），並在環境指紋中與分發版本並列記錄。
 __version__ = "2.0.0a1"
+
+try:
+    from hermes_shanghan._version import __version__ as DISTRIBUTION_VERSION
+except Exception:       # pragma: no cover
+    DISTRIBUTION_VERSION = "unknown"
 
 TCM_PROTOCOL_VERSION = "1.0"

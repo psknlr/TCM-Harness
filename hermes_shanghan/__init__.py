@@ -7,4 +7,5 @@
     患者端禁止自動診斷、自動處方和劑量建議。
 """
 
-__version__ = "0.1.0"
+# 單一版本源（消除漂移：此前這裡硬編碼 0.1.0 而 _version 為 0.4.0）
+from ._version import __version__  # noqa: E402,F401

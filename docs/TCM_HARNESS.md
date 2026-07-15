@@ -170,7 +170,66 @@ intake → task_classify → scope_contract → plan_compile
   （首見/異文/轉引/同名異書/OCR 噪聲）針對 fixture 微型庫，
   CI 離線可評；真實全庫按同 schema 由標註閉環擴充。
 
-## 十、測試
+## 十、數據源與安全加固（審查修復）
 
-`tests/test_tcm_*.py` 189 項（fixture 微型全庫含同名異書、多傳本、
-跨朝代術語鏈、注入文本書），全部離線確定性。全倉 699 項。
+### 數據源：笈成全庫（jicheng）
+
+hermes_tcm 的檢索數據源就是 jicheng 全庫——`config.LIBRARY_URL =
+https://jicheng.tw/files/jcw/book-20180111.7z`（sha256 釘定）。
+`library fetch` 下載→校驗→審查→原子切換到 `data/library/books/`；
+全部 `catalog.*/text.*/citation.*` 工具經 `tools/_shared.searcher()`
+讀取同一個 `config.LIBRARY_DIR`。run 記錄的 `corpus_version` 指向
+**答案實際取自的庫版本**（`jicheng@<archive_sha256前12>`，
+`corpus/fingerprint.py`），非伤寒論規則庫 manifest——證據回庫核驗與
+replay 以此為準。`hermes-tcm corpus status|fetch` 查看/下載。
+
+### P0/P1 加固（`tests/test_tcm_hardening.py`）
+
+* **認證/授權**（`core/auth.py`）：Principal 只來自服務端 token
+  （subject/tenant/max_role/allowed_purposes）；請求體 role 只能降級，
+  提權/越目的一律 403；未配置 token = 匿名 public 開發模式。
+* **審批不可偽造**（`harness/approvals.py`）：審核人角色/租戶 +
+  action_digest + 有效期 + 單次使用逐項核驗；citation_failure 永不可批。
+* **租戶隔離**（`checkpoint.py`）：runs 帶 owner_subject/tenant_id；
+  跨租戶/非屬主訪問 403；資源解析器字段投影不回完整內部態。
+* **ScopeContract**（`harness/scope.py`）：不可變範圍合同，Broker 為
+  每次檢索注入約束 + 後置過濾越界命中 + 覆蓋回寫 scope_hash——聲明的
+  scope 與實際入賬證據一致，不靠 Agent 記得填參數。
+* **回源核驗**（`evidence/packets.py`）：區分 integrity_self_check（內部
+  自洽）與 source_reverified（版本鎖定庫回源切片對照）；首見/轉引/臨床/
+  方劑源流等高風險主張缺回源核驗即降級 needs_review。
+* **節點執行上下文**（`broker.for_node`）：工具白名單 = 節點 tool_scope、
+  節點預算、截止協作式取消。
+* **超時熔斷**（`broker._run_with_timeout`）：只讀工具超時線程登記並在
+  滯留過多時熔斷；寫工具同步執行不孤立。
+* **前置分診**（`_n_intake`）：患者教育/public 的臨床請求在任何工具
+  執行前攔截（0 工具消耗），不留到 release 才擋。
+* **能力標籤**（ToolContract `capabilities`）：目的限制以契約聲明為據，
+  不再靠工具名前綴猜測。
+
+### 真正的 MCP Server（`integrations/mcp_server.py`）
+
+JSON-RPC 2.0 over stdio：initialize（能力協商）/tools.list/tools.call
+（經 Broker）/resources.list/resources.read/ping/cancel。啟動
+`hermes-tcm serve-mcp --transport stdio`。此前 `integrations/mcp.py`
+只是 MCP-compatible schemas + 本地 ResourceResolver。
+
+### hermes-tcm CLI（`cli.py`）
+
+`research / tool / discover / resource / corpus / serve / serve-mcp /
+eval / replay`——新內核的第一等產品入口。
+
+## 十一、成熟度邊界（如實標注）
+
+* TEI/IIIF/OCFL 為 **prototype / compatible subset**：無 XSD 校驗、無
+  真實影像 Image Service、無官方 validator——不宣稱 fully conformant。
+* HTTP 服務為**開發/演示**服務器（全局鎖串行、無異步任務/事件流/限流）；
+  生產層路線為 ASGI + PostgreSQL + worker pool + Object Storage + OTel。
+* semantic/graph 檢索、Streamable-HTTP MCP 傳輸為**規劃層**，顯式
+  not_implemented，不以確定性路徑降級混充。
+
+## 十二、測試
+
+`tests/test_tcm_*.py` 226 項（fixture 微型全庫含同名異書、多傳本、
+跨朝代術語鏈、注入文本書；含 P0/P1 加固對抗回歸），全部離線確定性。
+全倉 734 項。

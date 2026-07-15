@@ -82,4 +82,5 @@ class TCMClient:
                                       limit=limit)
 
     def read_resource(self, uri: str) -> Dict:
-        return ResourceResolver(run_store=self.store).read(uri)
+        return ResourceResolver(run_store=self.store,
+                                principal=self.principal).read(uri)

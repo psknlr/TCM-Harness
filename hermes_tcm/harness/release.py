@@ -112,9 +112,10 @@ def evaluate_release(spec, claims: Sequence[ClaimRecord],
                 review.append(key)
                 reasons.append(HUMAN_REVIEW_TRIGGERS.get(key, trig))
 
-    # 4. purpose gate：目的禁止能力
+    # 4. purpose gate：目的禁止能力（拒答例外——拒答文本可能提及
+    # 「劑量/處方」只是為了聲明不提供，不應反被目的閘攔截）
     purpose = spec.principal.purpose_of_use
-    actions = clinical_actions(answer)
+    actions = [] if refused else clinical_actions(answer)
     purpose_violations: List[str] = []
     for a in actions:
         cap = {"medication_recommendation": "formula_recommendation",

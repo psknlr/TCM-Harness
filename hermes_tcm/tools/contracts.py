@@ -46,6 +46,9 @@ class ToolContractV2:
     failure_modes: List[str] = field(default_factory=list)
     output_contract: str = "compact_envelope"   # 小型摘要+handles，非全文
     roles: List[str] = field(default_factory=list)   # 空=全部角色可用
+    # 能力標籤（P1-9）：目的限制檢查的正式依據，不再靠工具名前綴猜。
+    # 例：formula.compare_dosage → ["dosage_conversion"]
+    capabilities: List[str] = field(default_factory=list)
     version: str = "2.0.0"
 
     def __post_init__(self):
@@ -88,6 +91,7 @@ class ToolContractV2:
             "failure_modes": self.failure_modes,
             "output_contract": self.output_contract,
             "roles": self.roles,
+            "capabilities": self.capabilities,
             "schema_hash": self.schema_hash(),
         }
 

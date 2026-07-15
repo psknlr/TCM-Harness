@@ -116,7 +116,10 @@ class ResearchRunController:
                          task_type=task_type,
                          environment_fingerprint=environment_fingerprint(),
                          **spec_kwargs)
-        self.store.create_run(spec.run_id, spec.to_dict())
+        # 屬主/租戶落庫（P0-3 資源隔離的依據）
+        self.store.create_run(spec.run_id, spec.to_dict(),
+                              owner_subject=principal.subject,
+                              tenant_id=principal.tenant_id)
         self.store.append_event(spec.run_id, "run_prepared",
                                 {"task_type": spec.task_type})
         return spec
@@ -154,6 +157,14 @@ class ResearchRunController:
             self.registry.for_role(spec.principal.role), ledger,
             principal=spec.principal, budget=budget,
             corpus_version=corpus_version)
+        # scope 重建（resume：scope 屬於 run，跨進程延續）——P0-4
+        from .scope import ScopeContract, compile_scope
+        if state.get("scope"):
+            broker.scope = ScopeContract.from_dict(state["scope"])
+        else:
+            broker.scope = compile_scope(spec.corpus_scope.to_dict(),
+                                         corpus_version)
+            state["scope"] = broker.scope.to_dict()
         # 覆蓋記錄重建
         for cov_d in (state.get("coverages") or {}).values():
             try:
@@ -225,6 +236,20 @@ class ResearchRunController:
             for cov in broker.coverages.values():
                 self.store.record_coverage(run_id, cov.to_dict())
 
+            # P1-8：intake 前置分診說停就停——標記下游（除 release）
+            # 跳過，直達 release 產出拒答信封，不消耗任何檢索工具
+            if node.node_id == "intake":
+                dec = (outcome.get("output", {}) or {}).get(
+                    "triage_decision") or {}
+                if dec and not dec.get("continue_execution", True):
+                    ctx.state["refused"] = True
+                    ctx.state["refusal_message"] = dec.get("message", "")
+                    ctx.state["refused_intents"] = dec.get("intents", [])
+                    for n in self.graph:
+                        if n.node_id not in ("intake", "release"):
+                            state["nodes"][n.node_id] = {
+                                "status": "skipped_by_triage"}
+
             new_status = outcome.get("run_status")
             if new_status:
                 status = new_status
@@ -255,8 +280,13 @@ class ResearchRunController:
         return True
 
     def resume(self, run_id: str, approve: str = "", reject: str = "",
-               approver: str = "", reason: str = "") -> Dict:
-        """approve/reject 按 trigger 逐項；批准後重跑 claim_verify 下游。"""
+               approver: str = "", reason: str = "",
+               reviewer=None) -> Dict:
+        """approve/reject 按 trigger 逐項；批准後重跑 claim_verify 下游。
+
+        reviewer：服務端認證的審核人 Principal（P0-2）。提供時強制核驗
+        審核人角色/租戶；審批對象一致性/有效期/單次使用一律核驗。"""
+        from .approvals import verify_approval
         row = self.store.load(run_id)
         if row is None:
             raise ValueError(f"未知 run：{run_id}")
@@ -268,26 +298,46 @@ class ResearchRunController:
         version = row["state_version"]
         if row["status"] != "paused" and not (approve or reject):
             return self.execute(run_id)
+        # 審批請求索引（單次使用/有效期/digest 核驗的依據）
+        requests = {a["trigger"]: a for a in self.store.approvals(run_id)}
+        cur_digest = _digest(state.get("final_answer"))
         if reject:
+            req = requests.get(reject)
+            if req is not None:
+                req["status"] = "rejected"
+                req["reviewer"] = getattr(reviewer, "subject", approver)
+                self.store.record_approval(run_id, req)
             state.setdefault("guardrail_events", []).append(
                 {"event": "human_review_rejected", "trigger": reject,
-                 "approver": approver, "reason": reason})
+                 "approver": getattr(reviewer, "subject", approver),
+                 "reason": reason})
             self.store.save_state(run_id, "rejected", state, version)
             return self.store.load(run_id)
         if approve:
-            ok, why = approval_allowed(approve)
+            req = requests.get(approve)
+            ok, why = verify_approval(req, approve, reviewer=reviewer,
+                                      current_action_digest=cur_digest)
             if not ok:
                 state.setdefault("guardrail_events", []).append(
                     {"event": "approval_refused", "trigger": approve,
+                     "approver": getattr(reviewer, "subject", approver),
                      "reason": why})
                 self.store.save_state(run_id, row["status"], state, version)
                 return self.store.load(run_id)
+            # 單次使用：消費該審批請求（防重放）
+            if req is not None:
+                req["status"] = "approved"
+                req["reviewer"] = getattr(reviewer, "subject", approver)
+                req["approved_at"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+                self.store.record_approval(run_id, req)
             approved = sorted(set(state.get("approved_items", []))
                               | {approve})
             state["approved_items"] = approved
             state.setdefault("guardrail_events", []).append(
                 {"event": "human_review_approved", "trigger": approve,
-                 "approver": approver, "reason": reason})
+                 "approver": getattr(reviewer, "subject", approver),
+                 "reviewer_role": getattr(reviewer, "role", ""),
+                 "reason": reason})
             # 批准 ≠ 改狀態：重置 claim_verify 及下游，重新過閘
             for node_id in ("claim_verify", "synthesis", "citation_bind",
                             "safety_and_policy", "human_review", "release"):
@@ -303,9 +353,18 @@ class ResearchRunController:
             raise ValueError(f"未實現節點 {node.node_id}")
         attempts = 0
         last_error = ""
+        # P0-6：工具調用型節點在受限 Broker 上下文執行——只能調本節點
+        # tool_scope 命名空間、受節點預算與截止約束。ctx.broker 在節點
+        # 執行期間切換為受限視圖（共享台賬/覆蓋/run 預算/scope）。
+        run_broker = ctx.broker
+        use_node_broker = bool(node.tool_scope) or node.budget_tool_calls
+        deadline = (time.time() + node.timeout_ms / 1000.0
+                    if node.timeout_ms else None)
         while attempts <= node.retry_policy:
             attempts += 1
             t0 = time.time()
+            if use_node_broker:
+                ctx.broker = run_broker.for_node(node, deadline=deadline)
             try:
                 output = handler(ctx)
                 missing = [f for f in node.output_schema
@@ -324,6 +383,8 @@ class ResearchRunController:
                              for k in node.idempotency_key_fields})}
             except Exception as exc:   # noqa: BLE001 — 節點級隔離
                 last_error = f"{type(exc).__name__}: {str(exc)[:200]}"
+            finally:
+                ctx.broker = run_broker      # 恢復 run 級 broker
         if node.fallback_policy == "degrade":
             output = {"degraded": True, "error": last_error}
             for f in node.output_schema:
@@ -351,8 +412,40 @@ class ResearchRunController:
                 {"event": "injection_signals_in_query",
                  "signals": signals,
                  "note": "輸入標記為 UNTRUSTED；信號僅審計，不改變數據地位"})
-        decision = {"outcome": "safe", "continue_execution": True}
-        # public 角色 + 臨床型問句：目的守衛在 release 兜底，此處預警
+        decision = {"outcome": "safe", "continue_execution": True,
+                    "message": ""}
+        # P1-8：紅旗分診 + 意圖守衛在**任何領域工具執行前**完成——
+        # 患者教育目的/public 角色的臨床型請求先攔截，不消耗檢索工具，
+        # 不留到 release 才擋。復用 hermes_shanghan 成熟 triage/守衛。
+        purpose = ctx.spec.principal.purpose_of_use
+        role = ctx.spec.principal.role
+        if purpose == "patient_education" or role == "public":
+            try:
+                from hermes_shanghan import safety
+                flag = safety.red_flag_triage(ctx.spec.query)
+                if flag:
+                    decision = {"outcome": "emergency_redirect",
+                                "continue_execution": False,
+                                "message": "檢測到急症紅旗信號，請立即就醫。"
+                                           "本接口不提供診斷或處方。",
+                                "intents": flag.get("red_flags", [])}
+                else:
+                    guard = safety.patient_intent_guard(ctx.spec.query)
+                    if guard:
+                        decision = {
+                            "outcome": "refused_intent",
+                            "continue_execution": False,
+                            "message": "該請求涉及診斷/處方/劑量，"
+                                       "患者教育接口不提供；可改問古籍"
+                                       "原文與術語含義。",
+                            "intents": guard.get("refused_intents", [])}
+            except Exception:
+                pass
+        if not decision["continue_execution"]:
+            ctx.state["guardrail_events"].append(
+                {"event": "intake_triage_refused",
+                 "outcome": decision["outcome"],
+                 "intents": decision.get("intents", [])})
         return {"sanitized_query": ctx.spec.query.strip(),
                 "injection_signals": signals,
                 "triage_decision": decision}
@@ -367,7 +460,12 @@ class ResearchRunController:
                 "query_forms": [f for f in forms if f]}
 
     def _n_scope_contract(self, ctx: "_RunContext") -> Dict:
+        # scope 已在 execute() 頂部編譯進 broker.scope 並落 state["scope"]
+        # （resume 沿用）；此節點輸出不可變合同供下游核對
+        scope = ctx.broker.scope
         return {"corpus_scope": ctx.spec.corpus_scope.to_dict(),
+                "scope_contract": scope.to_dict() if scope else {},
+                "scope_hash": scope.scope_hash if scope else "",
                 "corpus_version":
                     ctx.spec.environment_fingerprint.get("corpus", "")}
 
@@ -553,7 +651,17 @@ class ResearchRunController:
         tools_used = sorted(set(self._tools_used(ctx.spec.run_id))
                             | {e["tool"] for e in ctx.broker.audit_tail(200)
                                if e.get("ok")})
-        verifier = ClaimVerifier(ctx.ledger, self.engine)
+        # P0-5：版本鎖定的 PassageIndex 供高風險主張回源核驗；庫未就緒
+        # 時為 None（source_reverified 如實為 False，高風險主張降級 review）
+        passage_index = None
+        try:
+            from ..tools._shared import searcher
+            s = searcher()
+            passage_index = s.index if s is not None else None
+        except Exception:
+            passage_index = None
+        verifier = ClaimVerifier(ctx.ledger, self.engine,
+                                 passage_index=passage_index)
         summary = verifier.verify_all(
             ctx.claims, coverage=coverage,
             tools_used=tools_used,
@@ -594,6 +702,9 @@ class ResearchRunController:
         from ..claims.binder import bind_citations
         draft = ctx.outputs["synthesis"]["draft_answer"]
         bound, citations = bind_citations(draft, ctx.claims, ctx.ledger)
+        # 綁定即定稿：final_answer 在此固定，使 human_review 的
+        # action_digest 與 resume 時的核驗對象一致（審批對象不漂移）
+        ctx.state["final_answer"] = bound
         return {"bound_answer": bound, "citations": citations}
 
     def _n_safety_and_policy(self, ctx: "_RunContext") -> Dict:
@@ -606,8 +717,36 @@ class ResearchRunController:
                                       ctx.spec.principal.purpose_of_use}}
 
     def _n_human_review(self, ctx: "_RunContext") -> Dict:
+        # 拒答路徑（always_rerun 使本節點即便被標記跳過仍會執行）：
+        # 分診已攔截，無主張可審——直接空隊列
+        if ctx.state.get("refused"):
+            return {"review_queue": [], "pending": []}
         queue: List[Dict] = []
         answer = ctx.outputs["citation_bind"]["bound_answer"]
+        action_digest = _digest(answer)
+        evidence_digest = _digest([r.evidence_id
+                                   for r in ctx.ledger.all_records()])
+        policy_version = self.engine.version
+        tenant = ctx.spec.principal.tenant_id
+
+        def _add(key: str) -> None:
+            # 已批准的 trigger 不再重建請求（否則會覆蓋已消費的請求，
+            # 打開重放缺口）——批准後下游重跑時保留 approved 態
+            existing = {a["trigger"]: a
+                        for a in self.store.approvals(ctx.spec.run_id)}
+            prev = existing.get(key)
+            if prev is not None and prev.get("status") == "approved" \
+                    and prev.get("action_digest") == action_digest:
+                queue.append(prev)
+                return
+            req = build_approval_request(
+                ctx.spec.run_id, key, action_digest=action_digest,
+                evidence_digest=evidence_digest,
+                policy_version=policy_version, tenant_id=tenant)
+            if req["approval_id"] not in {q["approval_id"] for q in queue}:
+                queue.append(req)
+                self.store.record_approval(ctx.spec.run_id, req)
+
         for c in ctx.claims:
             if c.status != "needs_review":
                 continue
@@ -617,20 +756,10 @@ class ResearchRunController:
                 key = trig if approval_allowed(trig)[0] or \
                     trig == "citation_failure" else \
                     "semantic_support_review"
-                req = build_approval_request(ctx.spec.run_id, key,
-                                             action_digest=_digest(answer))
-                if req["approval_id"] not in {q["approval_id"]
-                                              for q in queue}:
-                    queue.append(req)
-                    self.store.record_approval(ctx.spec.run_id, req)
+                _add(key)
         for flag in ctx.outputs.get("identity_and_attribution_check", {}) \
                 .get("identity_report", {}).get("identity_flags", []):
-            req = build_approval_request(ctx.spec.run_id,
-                                         "identity_needs_review",
-                                         action_digest=_digest(answer))
-            if req["approval_id"] not in {q["approval_id"] for q in queue}:
-                queue.append(req)
-                self.store.record_approval(ctx.spec.run_id, req)
+            _add("identity_needs_review")
         approved = set(ctx.state.get("approved_items", []))
         pending = [q for q in queue if q["trigger"] not in approved]
         out: Dict[str, Any] = {"review_queue": queue,
@@ -640,6 +769,24 @@ class ResearchRunController:
         return out
 
     def _n_release(self, ctx: "_RunContext") -> Dict:
+        # P1-8 拒答路徑：intake 分診攔截 → 直接產出拒答信封（拒答是安全
+        # 結論，pass）；未跑檢索/綁定節點，answer 取分診訊息
+        if ctx.state.get("refused"):
+            answer = ctx.state.get("refusal_message", "該請求已被拒絕。")
+            verdict = evaluate_release(ctx.spec, [], answer,
+                                       refused=True)
+            envelope = AnswerEnvelope(
+                answer=answer, answer_type="refusal",
+                limitations=["前置分診攔截：未執行任何檢索"],
+                run={"run_id": ctx.spec.run_id,
+                     "corpus_version":
+                         ctx.spec.environment_fingerprint.get("corpus", "")},
+                release=verdict)
+            ctx.state["envelope"] = envelope.to_dict()
+            ctx.state["final_answer"] = answer
+            return {"envelope": envelope.to_dict(),
+                    "decision": verdict["decision"],
+                    "_run_status": "completed"}
         answer = ctx.outputs["citation_bind"]["bound_answer"]
         problems = ctx.ledger.verify_integrity()
         verdict = evaluate_release(

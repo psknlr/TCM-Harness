@@ -188,6 +188,7 @@ def register(reg) -> None:
             "formula": {"type": "string"}}, "required": ["formula"]},
         func=t_formula_resolve,
         use_when=["按方名取方證規則與原文證據"],
+        capabilities=["formula_recommendation"],
         evidence_contract=domain_ec,
         failure_modes=["formula_not_found", "ambiguous_formula_name"]))
     reg.add(ToolContractV2(
@@ -198,6 +199,7 @@ def register(reg) -> None:
             "required": ["formulas"]},
         func=t_formula_compare_composition,
         use_when=["方劑組成/主治比較"],
+        capabilities=["formula_recommendation"],
         evidence_contract=domain_ec,
         failure_modes=["formula_not_found"]))
     reg.add(ToolContractV2(
@@ -208,6 +210,7 @@ def register(reg) -> None:
             "formula": {"type": "string"}}, "required": []},
         func=t_formula_compare_dosage,
         use_when=["劑量比較/演化研究"],
+        capabilities=["dosage_conversion"],
         evidence_contract=domain_ec,
         failure_modes=["formula_not_found"]))
     reg.add(ToolContractV2(

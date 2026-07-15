@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, "claude/**" ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install (dev extras only — core is stdlib-only)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Byte-compile (catch syntax errors across the tree)
+        run: python -m compileall -q hermes_tcm hermes_shanghan tests
+      - name: Unit + integration tests (offline; random order surfaces
+              global-state leaks)
+        run: python -m pytest tests/ -q -p randomly --timeout=300
+      - name: Coverage (informational)
+        run: |
+          coverage run -m pytest tests/ -q || true
+          coverage report -m || true
+
+  build-and-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build wheel
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build --wheel
+      - name: Clean-wheel install smoke test
+        run: |
+          python -m venv /tmp/venv
+          /tmp/venv/bin/pip install dist/*.whl
+          # CLIs resolve; MCP schema export works from a clean install
+          /tmp/venv/bin/hermes-tcm --version
+          /tmp/venv/bin/python -c "from hermes_tcm.integrations.specs import export_all; print(len(export_all()['mcp_tools']), 'tools')"
+          /tmp/venv/bin/python -c "from hermes_tcm.integrations.mcp_server import MCPServer; s=MCPServer(); print(s.handle({'jsonrpc':'2.0','id':1,'method':'initialize','params':{}})['result']['serverInfo'])"
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Security / adversarial tests
+        run: python -m pytest tests/test_tcm_security.py tests/test_tcm_hardening.py -q
+      - name: Dependency audit (core has zero runtime deps)
+        run: pip-audit || true

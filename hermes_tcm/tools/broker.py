@@ -48,7 +48,8 @@ class CapabilityBroker:
                  budget=None,
                  corpus_version: str = "",
                  approved_operations: Optional[List[str]] = None,
-                 trace=None, parent_span_id: Optional[str] = None):
+                 trace=None, parent_span_id: Optional[str] = None,
+                 scope=None):
         self.registry = registry
         self.ledger = ledger
         self.principal = principal or Principal(subject="anonymous",
@@ -58,6 +59,13 @@ class CapabilityBroker:
         self.approved_operations = set(approved_operations or [])
         self.trace = trace
         self.parent_span_id = parent_span_id
+        # ScopeContract：非 None 且非全庫時，每次檢索受其約束（P0-4）
+        self.scope = scope
+        # 節點級工具白名單（P0-6）；None=不限（由角色/目的兜底）
+        self.node_tool_scope: Optional[set] = None
+        self.deadline: Optional[float] = None      # 節點截止（P0-6/P0-8）
+        self.node_budget: int = 0                  # 0=不限（節點級預算）
+        self._node_calls: List[int] = [0]
         self.audit_log: deque = deque(maxlen=256)
         self.coverages: Dict[str, SearchCoverage] = {}
         self.tool_calls: List[Dict] = []
@@ -65,6 +73,19 @@ class CapabilityBroker:
         self._token = mint_broker_token("capability_broker")
         self._cache: Dict[str, Dict] = {}
         self._lock = threading.Lock()
+
+    def for_node(self, node_contract, deadline: Optional[float] = None):
+        """節點受限視圖（P0-6）：工具白名單 = 節點 tool_scope 命名空間；
+        deadline 供協作式取消；node budget 限本節點工具調用數。共享
+        台賬/預算/覆蓋/scope（同一 run）。"""
+        import copy as _copy
+        sub = _copy.copy(self)
+        scopes = getattr(node_contract, "tool_scope", None) or []
+        sub.node_tool_scope = set(scopes) if scopes else None
+        sub.deadline = deadline
+        sub.node_budget = getattr(node_contract, "budget_tool_calls", 0) or 0
+        sub._node_calls = [0]      # 本節點獨立計數（不共享）
+        return sub
 
     # ------------------------------------------------------------------
     def call(self, name: str, arguments: Optional[Dict] = None,
@@ -107,14 +128,42 @@ class CapabilityBroker:
                             "available_namespaces":
                                 sorted(self.registry.namespaces())})
 
+        # 0b. 節點工具白名單（P0-6）：受限上下文只能調本節點 tool_scope
+        if self.node_tool_scope is not None \
+                and contract.namespace not in self.node_tool_scope:
+            self.guardrail_events.append(
+                {"event": "node_tool_scope_denied", "tool": resolved,
+                 "node_scope": sorted(self.node_tool_scope)})
+            return _finish({"error": f"node_tool_scope_denied：{resolved} "
+                                     f"不在節點允許命名空間 "
+                                     f"{sorted(self.node_tool_scope)}"})
+
+        # 0c. 截止檢查（P0-6/P0-8）：協作式取消——過截止不再啟動新調用
+        if self.deadline is not None and time.time() > self.deadline:
+            return _finish({"error": "NODE_DEADLINE_EXCEEDED：節點已超時，"
+                                     "不啟動新工具調用（協作式取消）"})
+
+        # 0d. 節點級預算（P0-6）：本節點工具調用數上限
+        if self.node_budget and self._node_calls[0] >= self.node_budget:
+            return _finish({"error": f"NODE_BUDGET_EXHAUSTED：本節點工具"
+                                     f"調用已達上限 {self.node_budget}"})
+
         # 1. 角色裁剪
         if contract.roles and self.principal.role not in contract.roles:
             return _finish({"error": f"角色 {self.principal.role} 無權調用 "
                                      f"{resolved}（允許：{contract.roles}）"})
 
-        # 2. 目的限制
-        capability = _tool_capability(resolved)
-        if capability:
+        # 1b. Run scope 約束注入（P0-4）：scope-aware 工具強制帶範圍參數
+        if self.scope is not None and not self.scope.is_unrestricted:
+            arguments = self.scope.constrain_arguments(resolved, arguments)
+
+        # 2. 目的限制（P1-9：優先用契約聲明的 capabilities，缺省回退
+        # 到工具名啟發——聲明式優於名稱前綴猜測）
+        caps = list(getattr(contract, "capabilities", None) or [])
+        if not caps:
+            fallback = _tool_capability(resolved)
+            caps = [fallback] if fallback else []
+        for capability in caps:
             ok, reason = purpose_allows(self.principal.purpose_of_use,
                                         capability, self.principal.role)
             if not ok:
@@ -146,6 +195,7 @@ class CapabilityBroker:
             return _finish({"error": "BUDGET_EXHAUSTED：本次運行工具預算"
                                      "已用盡，請基於已取證作答",
                             "budget": self.budget.snapshot()})
+        self._node_calls[0] += 1        # 節點級計數（P0-6）
 
         # 6. 緩存（鍵含語料版本——換版自動失效）
         key = "::".join([resolved, self.corpus_version,
@@ -160,10 +210,11 @@ class CapabilityBroker:
                                     node_id)
             return _finish(out, cache_hit=True)
 
-        # 7. 超時執行
+        # 7. 超時執行（只讀→超時線程可遺留熔斷；寫→同步不孤立）
         try:
-            result = _run_with_timeout(contract.func, arguments,
-                                       contract.timeout_ms / 1000.0)
+            result = _run_with_timeout(
+                contract.func, arguments, contract.timeout_ms / 1000.0,
+                read_only=(contract.side_effect == "read_only"))
         except BrokerTimeout:
             return _finish({"tool": resolved,
                             "error": f"tool {resolved} timeout"
@@ -187,6 +238,14 @@ class CapabilityBroker:
                                      f"{MAX_RESULT_BYTES} bytes",
                             "hint": "縮小 limit/max_scan 或分頁調用"})
 
+        # 8b. Run scope 後置過濾（P0-4）：constrain_arguments 未覆蓋的
+        # 檢索路徑（citation.* 全庫時間有序、dynasty 多值）在此按 scope
+        # 剔除越界命中，並把 scope_hash 回寫覆蓋記錄——聲明的 scope 與
+        # 實際入賬證據一致，不靠 Agent 記得填參數
+        if "error" not in result and self.scope is not None \
+                and not self.scope.is_unrestricted:
+            self._apply_scope(resolved, result)
+
         # 9. 證據 + 覆蓋登記（台賬唯一寫入口）。available:False 的結果
         # 既不入賬也不入緩存——庫未就緒不是可複用的成功結果
         if "error" not in result \
@@ -206,6 +265,47 @@ class CapabilityBroker:
         return _finish(result)
 
     # ------------------------------------------------------------------
+    def _apply_scope(self, tool: str, result: Dict) -> None:
+        """就地按 Run scope 過濾越界命中並回寫 scope_hash（P0-4）。
+
+        過濾對象：hits / passage_evidence / attestations_time_ordered；
+        earliest_in_library 從過濾後的時間線重算。剔除數量記入覆蓋
+        known_gaps（不靜默丟棄）。"""
+        scope = self.scope
+        dropped = 0
+
+        def _filt(key: str) -> None:
+            nonlocal dropped
+            items = result.get(key)
+            if isinstance(items, list):
+                kept = scope.filter_hits(items)
+                dropped += len(items) - len(kept)
+                result[key] = kept
+
+        _filt("hits")
+        _filt("passage_evidence")
+        if isinstance(result.get("attestations_time_ordered"), list):
+            _filt("attestations_time_ordered")
+            ordered = result["attestations_time_ordered"]
+            result["earliest_in_library"] = ordered[0] if ordered else None
+        # n_hits 同步
+        if "n_hits" in result and isinstance(result.get("hits"), list):
+            result["n_hits"] = len(result["hits"])
+        cov = result.get("coverage")
+        if isinstance(cov, dict):
+            cov["scope_hash"] = scope.scope_hash
+            cov["scope_id"] = scope.scope_id
+            if scope.categories:
+                cov["included_categories"] = list(scope.categories)
+            if scope.dynasties:
+                cov["dynasty_range"] = list(scope.dynasties)
+            if dropped:
+                gaps = list(cov.get("known_gaps") or [])
+                gaps.append(f"scope 過濾剔除 {dropped} 條越界命中")
+                cov["known_gaps"] = gaps
+        if dropped:
+            result["scope_filtered_out"] = dropped
+
     def _register_evidence(self, tool: str, span_id: str, out: Dict,
                            arguments: Dict, node_id: str) -> None:
         """工具結果 → EvidenceRecord V2 + SearchCoverage 登記。"""
@@ -291,9 +391,31 @@ def _validate_args(contract: ToolContractV2,
     return None
 
 
-def _run_with_timeout(func, arguments: Dict, timeout_s: float) -> Dict:
-    if timeout_s <= 0:
+# 超時遺留線程熔斷（P0-8）：Python 線程不可強殺，超時的只讀工作線程
+# 仍在後台跑完；滯留過多時熔斷新調用而非無限堆線程。只讀工具的遺留
+# 線程不產生持久副作用（無文件/網絡寫），其結果被丟棄、不入台賬——
+# 唯一風險是 CPU/內存佔用，故以計數熔斷兜底。
+MAX_ZOMBIE_THREADS = 16
+_ZOMBIE_THREADS: List[threading.Thread] = []
+_ZOMBIE_LOCK = threading.Lock()
+
+
+def _prune_zombies() -> int:
+    with _ZOMBIE_LOCK:
+        _ZOMBIE_THREADS[:] = [t for t in _ZOMBIE_THREADS if t.is_alive()]
+        return len(_ZOMBIE_THREADS)
+
+
+def _run_with_timeout(func, arguments: Dict, timeout_s: float,
+                      read_only: bool = True) -> Dict:
+    # 非只讀工具（寫操作）**同步**執行——寫不能被超時孤立在後台線程，
+    # 否則可能留下半寫狀態。寫工具是本地快速冪等操作，同步安全。
+    if timeout_s <= 0 or not read_only:
         return func(**arguments)
+    if _prune_zombies() >= MAX_ZOMBIE_THREADS:
+        raise BrokerTimeout(
+            f"熔斷：滯留超時工作線程過多（≥{MAX_ZOMBIE_THREADS}）——"
+            "拒絕新調用，待後台線程退出")
     result: List[Any] = []
     error: List[BaseException] = []
 
@@ -307,7 +429,10 @@ def _run_with_timeout(func, arguments: Dict, timeout_s: float) -> Dict:
     th.start()
     th.join(timeout=timeout_s)
     if th.is_alive():
-        raise BrokerTimeout(f"{timeout_s:g}s")
+        with _ZOMBIE_LOCK:
+            _ZOMBIE_THREADS.append(th)   # 登記遺留線程（供熔斷計數）
+        raise BrokerTimeout(f"{timeout_s:g}s（遺留只讀線程已登記，"
+                            "結果丟棄不入台賬）")
     if error:
         raise error[0]
     return result[0] if result else {}
