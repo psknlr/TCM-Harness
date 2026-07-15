@@ -373,7 +373,7 @@ class ResearchRunController:
         from .router import route
         routing = route(q, task_type)
         topic = extract_topic(q)
-        from hermes_shanghan.textutil import fold_variants
+        from ..platform import fold_variants
         forms = list(dict.fromkeys([topic, fold_variants(topic)]))
         return {"task_type": task_type, "topic": topic,
                 "query_forms": [f for f in forms if f],
@@ -407,22 +407,22 @@ class ResearchRunController:
             "broad_consensus": [
                 {"step": "search", "tool": "text.search_passages"},
                 {"step": "counter", "tool": "text.search_passages"}],
-            # 領域任務：專屬工具優先，全庫旁證補充（domain_first_then_library）
-            "formula_pattern": [
-                {"step": "resolve", "tool": "formula.resolve"},
-                {"step": "library_corroborate",
-                 "tool": "text.search_passages"}],
-            "herb_profile": [
-                {"step": "resolve", "tool": "herb.resolve"},
-                {"step": "trace", "tool": "herb.trace_name"}],
-            "case_study": [
-                {"step": "cases", "tool": "case.search"},
-                {"step": "library_corroborate",
-                 "tool": "text.search_passages"}],
         }
-        steps = plans.get(task_type,
-                          [{"step": "search",
-                            "tool": "text.search_passages"}])
+        steps = plans.get(task_type)
+        if steps is None:
+            # 領域任務計劃單一主源：ready Domain Pack 的 build_plan
+            # （domain_first_then_library——專屬工具優先，全庫旁證補充）
+            from ..domains.registry import ready_domain_packs
+            for pack in ready_domain_packs():
+                impl = pack.load_implementation()
+                if impl is None:
+                    continue
+                steps = impl.build_plan(
+                    task_type, ctx.outputs["task_classify"].get("entities"))
+                if steps:
+                    break
+        if not steps:
+            steps = [{"step": "search", "tool": "text.search_passages"}]
         return {"plan_steps": steps,
                 "skill_used": skill["name"] if skill else ""}
 
@@ -487,6 +487,19 @@ class ResearchRunController:
         for name, args in calls:
             out = ctx.broker.call(name, args, node_id="retrieval_fanout")
             results.append({"tool": name, "ok": "error" not in out,
+                            "error": out.get("error"),
+                            "available": out.get("available", True)})
+        # 零證據回退（確定性）：精確檢索無正文證據時，補一輪近似語義
+        # 召回——只有逐字蘊含核驗通過的片段會入台賬；仍零證據則負結論
+        # 沿確定性路徑照常成立（覆蓋記錄含 semantic 模式，如實聲明）
+        if not ctx.ledger.primary_text_ids() \
+                and task_type in ("general_search", "broad_consensus"):
+            out = ctx.broker.call("text.search_semantic",
+                                  {"query": topic},
+                                  node_id="retrieval_fanout")
+            results.append({"tool": "text.search_semantic",
+                            "ok": "error" not in out,
+                            "fallback": "zero_hit_semantic_recall",
                             "error": out.get("error"),
                             "available": out.get("available", True)})
         ctx.state["retrieval_results"] = results

@@ -27,8 +27,8 @@ class TCMClient:
     def __init__(self, store_path: Optional[Path] = None,
                  principal: Optional[Principal] = None):
         if store_path is None:
-            from hermes_shanghan import config
-            store_path = config.DATA_DIR / "tcm_runs" / "runs.db"
+            from ..platform import legacy_data_dir
+            store_path = legacy_data_dir() / "tcm_runs" / "runs.db"
         self.store = RunStore(Path(store_path))
         self.controller = ResearchRunController(self.store)
         self.principal = principal or Principal(subject="sdk",

@@ -7,11 +7,13 @@ from __future__ import annotations
 
 from typing import Dict, List
 
-from hermes_shanghan.classics.tools import t_trace_citation as _trace
-from hermes_shanghan.textutil import fold_variants
-
+from ..platform import classics_tools, fold_variants
 from .contracts import EvidenceContract, ToolContractV2
 from ._shared import coverage_from_search, searcher, unavailable
+
+
+def _trace(**kwargs) -> Dict:
+    return classics_tools().t_trace_citation(**kwargs)
 
 
 def _with_coverage(out: Dict, query_forms: List[str]) -> Dict:
@@ -78,8 +80,7 @@ def t_trace_term(term: str, variants: List[str] = None,
            "honesty": "在庫首現≠歷史首現；異名清單以調用方提供為準，"
                       "未提供的別名不會被檢索"}
     if last is not None:
-        from hermes_shanghan.classics.tools import _attach_evidence
-        _attach_evidence(out, s, merged[:top], term)
+        classics_tools()._attach_evidence(out, s, merged[:top], term)
         out["retrieval_layers"] = last.get("retrieval_layers", {})
     return _with_coverage(out, forms)
 
@@ -115,8 +116,7 @@ def t_counter_search(quote: str, max_scan: int = 300) -> Dict:
                    "被策略引擎攔截"}
     if last is not None:
         out["retrieval_layers"] = last.get("retrieval_layers", {})
-        from hermes_shanghan.classics.tools import _attach_evidence
-        _attach_evidence(out, s, candidates[:8], quote)
+        classics_tools()._attach_evidence(out, s, candidates[:8], quote)
     cov = coverage_from_search(out, probes, time_ordered=True,
                                search_modes=["partial", "variant_folded"])
     cov.earlier_partial_candidates = len(candidates)

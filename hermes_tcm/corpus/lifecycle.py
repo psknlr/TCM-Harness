@@ -119,8 +119,8 @@ def build_manifest_v2(library_root: Path, corpus_version: str,
 def _normalization_rules_hash() -> str:
     """規範化規則指紋 = 異體字折疊表內容哈希（規則變更即指紋變）。"""
     try:
-        from hermes_shanghan import textutil
-        table = getattr(textutil, "_VARIANT_MAP", {})
+        from ..platform import variant_map
+        table = variant_map()
         blob = json.dumps(sorted((str(k), str(v)) for k, v in table.items()),
                           ensure_ascii=False)
         return _sha256_bytes(blob.encode("utf-8"))

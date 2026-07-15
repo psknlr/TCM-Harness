@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Dict, List
 
-from hermes_shanghan.textutil import fold_variants
+from ..platform import fold_variants
 
 
 def _bigrams(text: str) -> set:

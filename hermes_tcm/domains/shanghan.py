@@ -25,6 +25,7 @@ from typing import Dict, List
 from ..core.identity import unit_urn, witness_urn, work_urn
 from ..corpus.iiif import PassageLocator
 from ..evidence.records import EvidenceRecord, evidence_id_for, quote_hash
+from .base import DomainPackInterface
 
 DOMAIN_ID = "shanghan"
 
@@ -38,10 +39,22 @@ MAX_RECORDS_PER_CALL = 12
 _DOMAIN_TOOL_PREFIXES = ("formula.", "herb.", "case.", "domain.shanghan.")
 
 
+def _legacy_registry():
+    from hermes_shanghan.agent.tools import get_registry
+    return get_registry()
+
+
+def call_legacy_tool(name: str, arguments: Dict) -> Dict:
+    """shanghan legacy 工具委托入口（Capability-Broker 管道在 legacy
+    側照常執行：默認拒絕/校驗/緩存/超時/審計）。本函數是內核調用
+    legacy 工具面的唯一縫隙——其它模塊不得直接 import legacy 註冊表。"""
+    out = _legacy_registry().call(name, dict(arguments or {}))
+    return out if isinstance(out, dict) else {"error": "非法工具輸出"}
+
+
 def _clause_store():
     try:
-        from hermes_shanghan.agent.tools import get_registry
-        return get_registry().art.clause_store()
+        return _legacy_registry().art.clause_store()
     except Exception:
         return None
 
@@ -143,3 +156,101 @@ def link_entities(query: str) -> List[Dict]:
             start = q.find(name, start + 1)
     entities.sort(key=lambda e: (e["name"],))
     return entities
+
+
+# ---------------------------------------------------------------------------
+# DomainPack 接口實現（P0-3：shanghan 是第一個標準插件）
+# ---------------------------------------------------------------------------
+_INTENT_CUES = ("傷寒", "伤寒", "六經", "六经", "經方", "经方",
+                "方證", "方证", "太陽病", "太阳病", "少陽", "少阳",
+                "陽明", "阳明", "太陰", "太阴", "少陰", "少阴", "厥陰",
+                "厥阴")
+
+
+class ShanghanDomainPack(DomainPackInterface):
+    """shanghan Domain Pack（DomainPackInterface 的第一個完整實現）。
+
+    內核經 registry 的 implementation 接縫加載本類；本模塊（連同
+    hermes_tcm/platform.py）是內核觸達 hermes_shanghan 的僅有兩個
+    允許模塊（tests/test_dependency_inversion.py 強制）。"""
+
+    domain_id = DOMAIN_ID
+
+    def metadata(self) -> Dict:
+        from .registry import get_domain_pack
+        pack = get_domain_pack(self.domain_id)
+        return pack.to_dict() if pack else {"domain_id": self.domain_id}
+
+    def health(self) -> Dict:
+        checks = []
+        try:
+            store = _clause_store()
+            probe_ok = bool(store and store.get("SHL_SONGBEN_0012"))
+            checks.append({"check": "clause_store", "ok": probe_ok,
+                           "note": "clause store 可用（探針條文命中）"
+                           if probe_ok else "clause store 不可用"})
+        except Exception as exc:
+            checks.append({"check": "clause_store", "ok": False,
+                           "note": f"{type(exc).__name__}"})
+        try:
+            n_tools = len(_legacy_registry().names())
+            checks.append({"check": "legacy_tools", "ok": n_tools > 0,
+                           "note": f"{n_tools} 個 legacy 工具"})
+        except Exception as exc:
+            checks.append({"check": "legacy_tools", "ok": False,
+                           "note": f"{type(exc).__name__}"})
+        healthy = all(c["ok"] for c in checks)
+        return {"domain_id": self.domain_id, "healthy": healthy,
+                "status": "ready" if healthy else "degraded",
+                "checks": checks}
+
+    def register_tools(self, registry) -> None:
+        """formula.* / herb.* / case.* 工具面（實現在 tools/domain_tools，
+        所有權在本包——內核經本方法註冊，不直接耦合實現模塊）。"""
+        from ..tools import domain_tools
+        domain_tools.register(registry)
+
+    def detect_intent(self, query: str) -> Dict:
+        q = query or ""
+        cues = [c for c in _INTENT_CUES if c in q]
+        entities = link_entities(q)
+        score = 1.0 if entities else (0.6 if cues else 0.0)
+        return {"domain_id": self.domain_id, "score": score,
+                "cues": cues[:6]}
+
+    def extract_entities(self, query: str) -> List[Dict]:
+        return link_entities(query)
+
+    def build_plan(self, task_type: str,
+                   entities: List[Dict] = ()) -> List[Dict]:
+        plans = {
+            "formula_pattern": [
+                {"step": "resolve", "tool": "formula.resolve"},
+                {"step": "library_corroborate",
+                 "tool": "text.search_passages"}],
+            "herb_profile": [
+                {"step": "resolve", "tool": "herb.resolve"},
+                {"step": "trace", "tool": "herb.trace_name"}],
+            "case_study": [
+                {"step": "cases", "tool": "case.search"},
+                {"step": "library_corroborate",
+                 "tool": "text.search_passages"}],
+        }
+        return [dict(s) for s in plans.get(task_type, [])]
+
+    def normalize_evidence(self, tool_name: str, result: Dict,
+                           corpus_version: str = "") -> List[EvidenceRecord]:
+        return normalize_evidence(tool_name, result, corpus_version)
+
+    def claim_policies(self) -> List[str]:
+        return []       # 當前沿用通用策略引擎（領域策略屬擴展位）
+
+    def specialists(self) -> List[str]:
+        return ["formula_herb_specialist"]
+
+    def evaluation_suites(self) -> List[str]:
+        return ["tests/test_harness.py", "tests/test_evidence_integrity.py",
+                "tests/test_audit_fixes.py"]
+
+    def call_legacy_tool(self, name: str, arguments: Dict) -> Dict:
+        return call_legacy_tool(name, arguments)

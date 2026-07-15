@@ -11,13 +11,15 @@ from typing import Dict, List, Optional
 from .contracts import EvidenceContract, ToolContractV2
 
 
-def _legacy_registry():
-    from hermes_shanghan.agent.tools import get_registry
-    return get_registry()
+def _call_legacy(name: str, arguments: Dict) -> Dict:
+    # 領域工具委托一律經 shanghan Domain Pack 接縫（P0-3 依賴倒置：
+    # 內核不直接 import legacy 註冊表）
+    from ..domains.shanghan import call_legacy_tool
+    return call_legacy_tool(name, arguments)
 
 
 def _delegate(legacy_name: str, new_name: str, arguments: Dict) -> Dict:
-    out = _legacy_registry().call(legacy_name, arguments)
+    out = _call_legacy(legacy_name, arguments)
     if isinstance(out, dict):
         out = dict(out)
         out["tool"] = new_name
@@ -92,7 +94,7 @@ def t_herb_compare_properties(herbs: List[str]) -> Dict:
         return {"error": "至少提供 2 味藥"}
     profiles: List[Dict] = []
     for h in herbs:
-        out = _legacy_registry().call("shanghan_herb_profile", {"herb": h})
+        out = _call_legacy("shanghan_herb_profile", {"herb": h})
         if out.get("error"):
             return {"tool": "herb.compare_properties",
                     "error": f"藥物檔案不可得：{h}——{out['error']}"}

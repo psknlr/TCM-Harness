@@ -8,11 +8,17 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional
 
-from hermes_shanghan.classics.tools import (t_read_passage as _read,
-                                            t_search_passages as _search)
-
+from ..platform import classics_tools
 from .contracts import EvidenceContract, ToolContractV2
 from ._shared import coverage_from_search, searcher, unavailable
+
+
+def _read(**kwargs) -> Dict:
+    return classics_tools().t_read_passage(**kwargs)
+
+
+def _search(**kwargs) -> Dict:
+    return classics_tools().t_search_passages(**kwargs)
 
 
 def t_search(query: str = "", any_terms: Optional[List[str]] = None,
@@ -52,7 +58,7 @@ def t_read_context(passage_id: str, window: int = 1) -> Dict:
     if p is None:
         return {"error": f"未找到段落 {passage_id}"}
     unit = s.lib._by_id[p.work_id]
-    from hermes_shanghan.classics.evidence import passage_evidence
+    from ..platform import passage_evidence
     window = max(0, min(int(window or 1), 3))
     siblings = [x for x in s.index.unit_passages(unit)
                 if x.file == p.file and abs(x.seq - p.seq) <= window]
@@ -67,6 +73,14 @@ def t_read_context(passage_id: str, window: int = 1) -> Dict:
                           "is_center": x.passage_id == passage_id}
                          for x in siblings],
             "passage_evidence": evs}
+
+
+def t_search_semantic(query: str, category: str = "", dynasty: str = "",
+                      work: str = "", limit: int = 8,
+                      max_scan: int = 200) -> Dict:
+    from ..retrieval.semantic import search_semantic
+    return search_semantic(query=query, category=category, dynasty=dynasty,
+                           work=work, limit=limit, max_scan=max_scan)
 
 
 def t_read_section(work: str, section: str = "", max_chars: int = 6000) -> Dict:
@@ -142,6 +156,24 @@ def register(reg) -> None:
         use_when=["按術語/文句在全庫定位段落證據", "為主張取證"],
         do_not_use_when=["需要首見/傳播結論（用 citation.trace_quote）",
                          "只需要書目信息（用 catalog.*）"],
+        evidence_contract=text_ec,
+        failure_modes=["corpus_unavailable", "scan_capped"]))
+    reg.add(ToolContractV2(
+        name="text.search_semantic",
+        description="近似語義檢索（形式擴展+bigram 召回+RRF+逐字蘊含"
+                    "核驗；非向量庫，確定性可重放）。只有 verbatim 蘊含"
+                    "核驗通過的片段是證據；lexical_support 命中僅是召回"
+                    "信號，引用前須 text.read_passage 取證。",
+        input_schema={"type": "object", "properties": {
+            "query": {"type": "string", "minLength": 2},
+            "category": {"type": "string"}, "dynasty": {"type": "string"},
+            "work": {"type": "string"},
+            "limit": {"type": "integer", "default": 8},
+            "max_scan": {"type": "integer", "default": 200}},
+            "required": ["query"]},
+        func=t_search_semantic,
+        use_when=["精確檢索零命中後的近失召回", "措辭不確定的探索式檢索"],
+        do_not_use_when=["查詢形式明確（先用 text.search_passages）"],
         evidence_contract=text_ec,
         failure_modes=["corpus_unavailable", "scan_capped"]))
     reg.add(ToolContractV2(

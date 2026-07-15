@@ -129,7 +129,7 @@ class ResourceResolver:
             return {"error": f"未找到段落 {passage_id}（掃描封頂下未命中"
                              "≠不存在）"}
         unit = s.lib._by_id[p.work_id]
-        from hermes_shanghan.classics.evidence import passage_evidence
+        from ..platform import passage_evidence
         return {"uri": f"tcm://passages/{passage_id}",
                 "locator": p.locator(),
                 "text": p.flat_text,

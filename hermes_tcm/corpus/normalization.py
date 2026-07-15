@@ -18,7 +18,7 @@ import hashlib
 from dataclasses import dataclass, field
 from typing import Dict, List, Tuple
 
-from hermes_shanghan.textutil import fold_variants
+from ..platform import fold_variants
 
 NORMALIZATION_MAP_VERSION = "identity-1to1-v1"
 

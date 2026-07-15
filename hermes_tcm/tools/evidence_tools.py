@@ -3,12 +3,15 @@ from __future__ import annotations
 
 from typing import Dict, List
 
-from hermes_shanghan.classics.tools import \
-    t_export_evidence_packet as _export_packet
-
+from ..platform import classics_tools
 from ..claims.counterevidence import counter_search_obligations
 from ..claims.records import CLAIM_TYPES, ClaimRecord, claim_id_for
 from .contracts import EvidenceContract, ToolContractV2
+
+
+def _export_packet(passage_ids: List[str], topic: str = "") -> Dict:
+    return classics_tools().t_export_evidence_packet(
+        passage_ids=passage_ids, topic=topic)
 
 
 def t_build_packet(passage_ids: List[str], topic: str = "") -> Dict:
