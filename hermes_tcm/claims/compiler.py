@@ -50,10 +50,10 @@ class ClaimCompiler:
             return self._negative(topic, cov)
         # 顯式時間排序（不信任登記順序）：朝代序 + 檢索排名；
         # 無朝代著作 UNRANKED 排最後，永遠不能贏得首現
-        from hermes_shanghan.classics.model import UNRANKED, dynasty_rank
+        from ..platform import dynasty_rank, unranked_rank
         first = min(recs, key=lambda r: (dynasty_rank(r.dynasty),
                                          r.retrieval_rank))
-        if dynasty_rank(first.dynasty) >= UNRANKED:
+        if dynasty_rank(first.dynasty) >= unranked_rank():
             # 全部候選無朝代——無時間信息可據，不得斷言首現，
             # 降級為普通 attestation 主張（守住「UNRANKED 不能贏首現」）
             return self._attestations(topic, recs, cov)

@@ -3,11 +3,17 @@ from __future__ import annotations
 
 from typing import Dict
 
-from hermes_shanghan.classics.tools import (t_concept_drift as _drift,
-                                            t_resolve_term as _resolve)
-
+from ..platform import classics_tools
 from .contracts import EvidenceContract, ToolContractV2
 from ._shared import coverage_from_search
+
+
+def _drift(**kwargs) -> Dict:
+    return classics_tools().t_concept_drift(**kwargs)
+
+
+def _resolve(**kwargs) -> Dict:
+    return classics_tools().t_resolve_term(**kwargs)
 
 
 def t_resolve_term(term: str, max_scan: int = 120) -> Dict:

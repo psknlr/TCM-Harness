@@ -29,8 +29,8 @@ def _store_path() -> Path:
     if override:
         root = Path(override)
     else:
-        from hermes_shanghan import config
-        root = config.DATA_DIR / "tcm_annotations"
+        from ..platform import legacy_data_dir
+        root = legacy_data_dir() / "tcm_annotations"
     root.mkdir(parents=True, exist_ok=True)
     return root / "annotations.jsonl"
 

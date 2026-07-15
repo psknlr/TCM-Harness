@@ -18,8 +18,8 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Dict, List, Optional
 
-from hermes_shanghan.classics.model import work_base_title
-from hermes_shanghan.corpus import library as _lib
+from ..platform import library as _library_module
+from ..platform import work_base_title
 
 from ..core.identity import (DigitalItem, IdentityResolution, WitnessRecord,
                              WorkRecord, classify_source_type,
@@ -45,9 +45,9 @@ class WorkRegistry:
     同一批 URN——確定性、可重放。
     """
 
-    def __init__(self, lib: Optional[_lib.Library] = None,
+    def __init__(self, lib=None,
                  curated_works: Optional[List[Dict]] = None):
-        self.lib = lib or _lib.Library()
+        self.lib = lib if lib is not None else _library_module().Library()
         self.works: Dict[str, WorkRecord] = {}
         self.witnesses: Dict[str, WitnessRecord] = {}
         self.items: Dict[str, DigitalItem] = {}

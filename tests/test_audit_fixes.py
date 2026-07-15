@@ -298,8 +298,10 @@ class TestReadiness(TCMFixtureCase):
                 payload, code = readiness_report(client)
                 self.assertEqual(code, 200)
                 self.assertTrue(payload["ok"])
-                self.assertIn({"domain_id": "shanghan", "status": "ready"},
-                              payload["domain_packs"])
+                shanghan = next(p for p in payload["domain_packs"]
+                                if p["domain_id"] == "shanghan")
+                self.assertEqual(shanghan["status"], "ready")
+                self.assertTrue(shanghan["healthy"])
                 # 語料缺失 → 503 + ok:false + 缺失組件（不再假就緒）
                 saved = config.LIBRARY_DIR
                 config.LIBRARY_DIR = Path(td) / "no_library"

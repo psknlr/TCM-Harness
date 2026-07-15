@@ -238,7 +238,8 @@ class TestRetrievalPlane(TCMFixtureCase):
     def test_modes_honest(self):
         from hermes_tcm.retrieval import RETRIEVAL_MODES
         self.assertEqual(RETRIEVAL_MODES["exact"]["status"], "ready")
-        self.assertEqual(RETRIEVAL_MODES["semantic"]["status"], "planned")
+        self.assertEqual(RETRIEVAL_MODES["semantic"]["status"], "ready")
+        self.assertEqual(RETRIEVAL_MODES["graph"]["status"], "ready")
 
     def test_exact_delegates(self):
         from hermes_tcm.retrieval import search_exact
@@ -259,10 +260,18 @@ class TestRetrievalPlane(TCMFixtureCase):
                           [{"passage_id": "b"}, {"passage_id": "c"}]])
         self.assertEqual(fused[0]["passage_id"], "b")   # 兩路都命中
 
-    def test_planned_modes_do_not_pretend(self):
+    def test_semantic_and_graph_implemented(self):
+        """P1 實裝後：semantic/graph 返回真實結果（不再 not_implemented）；
+        召回信號≠證據的細則見 tests/test_audit_fixes2.py。"""
         from hermes_tcm.retrieval import expand_graph, search_semantic
-        self.assertEqual(search_semantic("x")["error"], "not_implemented")
-        self.assertEqual(expand_graph(["a"])["error"], "not_implemented")
+        out = search_semantic("奔豚")
+        self.assertTrue(out.get("available"))
+        self.assertGreater(out["n_hits"], 0)
+        g = expand_graph(["SHL_SONGBEN_0012"])
+        self.assertTrue(g.get("available"))
+        self.assertGreater(g["n_nodes"], 1)
+        # 短查詢仍如實拒絕
+        self.assertIn("error", search_semantic("x"))
 
 
 class TestSDKAndSpecs(TCMFixtureCase):

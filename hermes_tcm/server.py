@@ -198,9 +198,17 @@ def readiness_report(client) -> "tuple[Dict, int]":
         client.store.load("__readyz_probe__")      # 只讀探測 DB 可用性
     except Exception:
         store_ok = False
-    from .domains.registry import list_domain_packs
-    packs = [{"domain_id": p["domain_id"], "status": p["status"]}
-             for p in list_domain_packs()]
+    from .domains.registry import DOMAIN_PACKS
+    packs = []
+    for p in DOMAIN_PACKS.values():
+        entry = {"domain_id": p.domain_id, "status": p.status}
+        if p.status == "ready" and p.implementation:
+            try:
+                impl = p.load_implementation()
+                entry["healthy"] = bool(impl and impl.health()["healthy"])
+            except Exception:
+                entry["healthy"] = False
+        packs.append(entry)
     missing = []
     if not corpus_ready:
         missing.append("corpus")

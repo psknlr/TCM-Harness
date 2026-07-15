@@ -158,12 +158,11 @@ def environment_fingerprint() -> Dict[str, str]:
     """環境指紋 V2：語料/工具/策略/技能/代碼/模型——replay 對比前提。"""
     import platform
 
-    from hermes_shanghan.agent.harness.state import spec_versions
-
     from ..claims.policy_dsl import ConclusionPolicyEngine
+    from ..platform import legacy_spec_versions
     from ..tools.registry import TOOLS_V2_VERSION
 
-    legacy = spec_versions()
+    legacy = legacy_spec_versions()
     engine = ConclusionPolicyEngine()
     skills_fp = ""
     try:

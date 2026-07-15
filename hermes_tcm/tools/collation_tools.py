@@ -3,12 +3,15 @@ from __future__ import annotations
 
 from typing import Dict, List
 
-from hermes_shanghan.classics.tools import t_compare_witnesses as _compare
-
 from ..corpus.tei import ApparatusEntry, Reading, export_tei_document
 from ..core.identity import witness_urn
+from ..platform import classics_tools
 from .contracts import EvidenceContract, ToolContractV2
 from ._shared import searcher, unavailable, work_registry
+
+
+def _compare(**kwargs) -> Dict:
+    return classics_tools().t_compare_witnesses(**kwargs)
 
 
 def t_align_witnesses(work: str, query: str = "", limit: int = 6) -> Dict:
@@ -81,7 +84,7 @@ def t_compare_passages(passage_ids: List[str]) -> Dict:
             pairs.append({"a": a.passage_id, "b": b.passage_id,
                           "similarity": round(sm.ratio(), 3),
                           "diffs": diffs})
-    from hermes_shanghan.classics.evidence import passage_evidence
+    from ..platform import passage_evidence
     evs = [passage_evidence(p, s.lib._by_id[p.work_id], 0,
                             min(len(p.flat_text), 120),
                             retrieval_query="compare")

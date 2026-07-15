@@ -4,11 +4,11 @@ from __future__ import annotations
 import threading
 from typing import Dict, List, Optional, Tuple
 
-from hermes_shanghan.classics.tools import _searcher
-from hermes_shanghan.corpus import library as _libmod
-
 from ..corpus.registry import WorkRegistry
 from ..evidence.coverage import SearchCoverage, coverage_id_for
+from ..platform import LIBRARY_FETCH_HINT
+from ..platform import classics_searcher as _searcher
+from ..platform import library as _library_module
 
 _REGISTRY_CACHE: Dict[Tuple[str, float], WorkRegistry] = {}
 _REGISTRY_LOCK = threading.Lock()
@@ -24,15 +24,16 @@ def work_registry() -> Optional[WorkRegistry]:
 
     鎖保護：clear()+rebuild 與並發讀之間的競態會讓一個線程 check 到
     key、另一線程 clear() 後 KeyError；鎖內單次 get 且不二次讀。"""
-    root = _libmod.library_root()
-    cat = root / _libmod.CATALOG_NAME
+    libmod = _library_module()
+    root = libmod.library_root()
+    cat = root / libmod.CATALOG_NAME
     if not cat.exists():
         return None
     key = (str(root), cat.stat().st_mtime)
     with _REGISTRY_LOCK:
         reg = _REGISTRY_CACHE.get(key)
         if reg is None:
-            reg = WorkRegistry(_libmod.Library(root))
+            reg = WorkRegistry(libmod.Library(root))
             _REGISTRY_CACHE.clear()
             _REGISTRY_CACHE[key] = reg
         return reg
@@ -41,8 +42,7 @@ def work_registry() -> Optional[WorkRegistry]:
 def unavailable(tool: str) -> Dict:
     return {"tool": tool, "available": False,
             "error": "corpus_unavailable",
-            "hint": "全庫未就緒：請先運行 `python3 -m hermes_shanghan "
-                    "library fetch`"}
+            "hint": LIBRARY_FETCH_HINT}
 
 
 def coverage_from_search(result: Dict, query_forms: List[str],

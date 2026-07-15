@@ -40,12 +40,24 @@ class DomainPack:
     evidence_normalizer: str = ""
     # entity_linker: callable(query) -> List[{"type","name","domain"}]
     entity_linker: str = ""
+    # implementation: DomainPackInterface 實現類（完整插件接口：
+    # health/register_tools/detect_intent/build_plan/…）
+    implementation: str = ""
+    # legacy_tool_caller: callable(name, arguments) -> Dict
+    legacy_tool_caller: str = ""
 
     def load_evidence_normalizer(self) -> Optional[Callable]:
         return _resolve(self.evidence_normalizer)
 
     def load_entity_linker(self) -> Optional[Callable]:
         return _resolve(self.entity_linker)
+
+    def load_implementation(self):
+        cls = _resolve(self.implementation)
+        return cls() if cls is not None else None
+
+    def load_legacy_tool_caller(self) -> Optional[Callable]:
+        return _resolve(self.legacy_tool_caller)
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -72,7 +84,9 @@ DOMAIN_PACKS: Dict[str, DomainPack] = {
         notes="第一個高質量 Domain Pack：A/B/C/D/E 證據層、條文規則庫、"
               "注家圖譜、劑量計量層全部沿用",
         evidence_normalizer="hermes_tcm.domains.shanghan:normalize_evidence",
-        entity_linker="hermes_tcm.domains.shanghan:link_entities"),
+        entity_linker="hermes_tcm.domains.shanghan:link_entities",
+        implementation="hermes_tcm.domains.shanghan:ShanghanDomainPack",
+        legacy_tool_caller="hermes_tcm.domains.shanghan:call_legacy_tool"),
     "jingui": DomainPack(
         domain_id="jingui", title="金匱要略", status="planned",
         base_works=["金匱要略"], categories=["金匱"],
@@ -160,7 +174,8 @@ _LEGACY_PLATFORM_PLUGINS = frozenset({"classics"})
 def legacy_consistency_problems() -> List[str]:
     """兩套註冊表交集領域的狀態一致性檢查（tests 釘死為空清單）。"""
     try:
-        from hermes_shanghan.domains import DOMAINS as LEGACY
+        from ..platform import legacy_domain_plugins
+        LEGACY = legacy_domain_plugins()
     except Exception as exc:      # legacy 表加載失敗本身就是問題
         return [f"legacy 註冊表不可加載：{type(exc).__name__}"]
     problems: List[str] = []
@@ -183,7 +198,8 @@ def legacy_consistency_problems() -> List[str]:
 def unified_domain_view() -> List[Dict]:
     """兩套註冊表的合併視圖（單一可觀察面；V2 為主源）。"""
     try:
-        from hermes_shanghan.domains import DOMAINS as LEGACY
+        from ..platform import legacy_domain_plugins
+        LEGACY = legacy_domain_plugins()
     except Exception:
         LEGACY = {}
     rows: List[Dict] = []
@@ -204,7 +220,9 @@ def unified_domain_view() -> List[Dict]:
 
 
 def call_domain_tool(name: str, arguments: Dict) -> Dict:
-    """domain.<pack>.<op> → legacy 工具委托（僅 ready 領域）。"""
+    """domain.<pack>.<op> → legacy 工具委托（僅 ready 領域；委托入口
+    由各 Domain Pack 的 legacy_tool_caller 接縫提供，內核不直接
+    import legacy 註冊表——P0-3 依賴倒置）。"""
     parts = name.split(".")
     if len(parts) != 3 or parts[0] != "domain":
         return {"error": f"非法領域工具名：{name}"}
@@ -219,8 +237,10 @@ def call_domain_tool(name: str, arguments: Dict) -> Dict:
     if legacy is None:
         return {"error": f"領域 {parts[1]} 無此工具投影：{name}",
                 "available": sorted(pack.tool_projections)}
-    from hermes_shanghan.agent.tools import get_registry
-    out = get_registry().call(legacy, arguments)
+    caller = pack.load_legacy_tool_caller()
+    if caller is None:
+        return {"error": f"領域 {parts[1]} 未提供 legacy 工具委托入口"}
+    out = caller(legacy, arguments)
     if isinstance(out, dict):
         out = dict(out)
         out["tool"] = name
