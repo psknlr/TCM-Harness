@@ -40,6 +40,10 @@ _TASK_SPECIALISTS = {
                         "chronology_specialist"],
     "broad_consensus": ["passage_retriever", "counterevidence_critic"],
     "general_search": ["passage_retriever"],
+    # 領域任務（Task Type × Domain Pack 正交路由）
+    "formula_pattern": ["formula_herb_specialist", "passage_retriever"],
+    "herb_profile": ["formula_herb_specialist"],
+    "case_study": ["passage_retriever"],
 }
 
 
@@ -55,6 +59,15 @@ class ResearchOrchestrator:
 
     def run(self, topic: str, task_type: str = "general_search",
             budget: Optional[RunBudgetV2] = None) -> Dict:
+        result, _, _, _ = self.run_with_context(topic, task_type,
+                                                budget=budget)
+        return result
+
+    def run_with_context(self, topic: str,
+                         task_type: str = "general_search",
+                         budget: Optional[RunBudgetV2] = None):
+        """run() + 內部對象（ledger/claims/broker）——供 SDK council
+        模式把合議結果接入同一 RunStore 與 Release Gate。"""
         budget = budget or RunBudgetV2()
         ledger = TypedEvidenceLedger(self.corpus_version)
         broker = CapabilityBroker(
@@ -120,13 +133,14 @@ class ResearchOrchestrator:
 
         # 5. 綜合（只基於已驗證結果）
         synthesis = Synthesizer().compose(all_claims, conflicts)
-        return {"answer": synthesis["answer"],
-                "task_type": task_type,
-                "topic": topic,
-                "specialists": [r.to_dict() for r in reports],
-                "conflicts": conflicts,
-                "verification": summary,
-                "synthesis_note": synthesis["note"],
-                "budget": budget.snapshot(),
-                "n_evidence": len(ledger),
-                "guardrail_events": broker.guardrail_events}
+        result = {"answer": synthesis["answer"],
+                  "task_type": task_type,
+                  "topic": topic,
+                  "specialists": [r.to_dict() for r in reports],
+                  "conflicts": conflicts,
+                  "verification": summary,
+                  "synthesis_note": synthesis["note"],
+                  "budget": budget.snapshot(),
+                  "n_evidence": len(ledger),
+                  "guardrail_events": broker.guardrail_events}
+        return result, ledger, all_claims, broker

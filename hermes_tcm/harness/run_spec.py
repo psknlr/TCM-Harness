@@ -10,7 +10,13 @@ from ..core.principals import Principal
 
 TASK_TYPES = ("earliest_attestation", "term_genealogy", "witness_comparison",
               "formula_lineage", "broad_consensus", "case_study",
-              "general_search", "negative_probe")
+              "general_search", "negative_probe",
+              # 領域任務（Task Type × Domain Pack 正交路由）
+              "formula_pattern", "herb_profile")
+
+# 執行模式：single=typed DAG 單代理；council=隔離合議多專家
+# （同一 RunStore / Evidence Ledger / Release Gate）
+EXECUTION_MODES = ("single", "council")
 
 OUTPUT_GENRES = ("research_brief", "answer", "collation_report",
                  "export_bundle")
@@ -71,6 +77,7 @@ class RunSpecV2:
     principal: Principal
     purpose_of_use: str = "historical_research"
     task_type: str = "general_search"
+    execution_mode: str = "single"
     output_genre: str = "research_brief"
     corpus_scope: CorpusScope = field(default_factory=CorpusScope)
     completeness_requirement: str = "systematic"
@@ -86,6 +93,8 @@ class RunSpecV2:
     def __post_init__(self):
         if self.task_type not in TASK_TYPES:
             raise ValueError(f"非法 task_type {self.task_type!r}")
+        if self.execution_mode not in EXECUTION_MODES:
+            raise ValueError(f"非法 execution_mode {self.execution_mode!r}")
         if self.output_genre not in OUTPUT_GENRES:
             raise ValueError(f"非法 output_genre {self.output_genre!r}")
         if self.completeness_requirement not in COMPLETENESS:
@@ -109,6 +118,7 @@ class RunSpecV2:
             "principal": self.principal.to_dict(),
             "purpose_of_use": self.purpose_of_use,
             "task_type": self.task_type,
+            "execution_mode": self.execution_mode,
             "output_genre": self.output_genre,
             "corpus_scope": self.corpus_scope.to_dict(),
             "completeness_requirement": self.completeness_requirement,
@@ -129,6 +139,7 @@ class RunSpecV2:
             principal=Principal.from_dict(d.get("principal", {})),
             purpose_of_use=d.get("purpose_of_use", "historical_research"),
             task_type=d.get("task_type", "general_search"),
+            execution_mode=d.get("execution_mode", "single"),
             output_genre=d.get("output_genre", "research_brief"),
             corpus_scope=CorpusScope(**(d.get("corpus_scope") or {})),
             completeness_requirement=d.get("completeness_requirement",
